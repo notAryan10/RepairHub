@@ -3,7 +3,7 @@
 ## 1. 🚀 Project Title
 RepairHub – Central Place for All Repair Requests
 
-## 2. 👤 Your Name & Roll Number
+## 2. 👤 Name & Roll Number
 Aryan Verma – 2024-B-09082006B
 
 ## 3. 📌 Problem Statement
