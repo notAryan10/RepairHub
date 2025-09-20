@@ -41,16 +41,17 @@ The system will:
 - Wardens and hostel admins  
 - Maintenance staff  
 
-## 7. 💻 Technology Stack
-- **Frontend (Mobile App):** React Native  
-- **Backend:** Node.js + Express.js  
-- **Database:**  
-  - MySQL → Issues, users, room details, staff assignments  
-  - MongoDB → Images, logs, feedback, activity history  
-- **Notifications:** Firebase Cloud Messaging (FCM)  
-- **Authentication:** Firebase Auth or JWT-based system  
-- **File Storage:** Firebase Storage / AWS S3 (for images)  
-- **Hosting:** Railway / AWS / Firebase Hosting  
+## 7. 💻Technology Stack
+
+- **Frontend:** React Native (Expo)
+- **Navigation:** React Navigation
+- **State Management:** React Context / Zustand
+- **Backend:** Node.js + Express.js
+- **Database:** MySQL (Prisma ORM)
+- **Authentication:** JWT
+- **Notifications:** Firebase Cloud Messaging (FCM)
+- **File Storage:** AWS S3 / Firebase Storage
+- **Hosting:** Render / Vercel
 
 ## 8. 💯 Expected Outcome
 A fully functional mobile app where students can log issues in seconds, wardens can manage them efficiently, and repairs are completed faster with transparency.
