@@ -6,19 +6,28 @@ export default function HomeScreen({ navigation }) {
     <View style={styles.container}>
       <Text style={styles.title}>Welcome to RepairHub</Text>
 
-      <TouchableOpacity style={styles.card} onPress={() => navigation.navigate("Issues")} >
-        <Text style={styles.cardText}>View Issues</Text>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate("Issues")}
+      >
+        <Text style={styles.buttonText}>View Issues</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.card} onPress={() => navigation.navigate("Staff")}>
-        <Text style={styles.cardText}>Staff</Text>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate("Staff")}
+      >
+        <Text style={styles.buttonText}>Staff</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.card} onPress={() => navigation.navigate("Profile")}>
-        <Text style={styles.cardText}>Profile</Text>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate("Profile")}
+      >
+        <Text style={styles.buttonText}>Profile</Text>
       </TouchableOpacity>
     </View>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -29,25 +38,27 @@ const styles = StyleSheet.create({
     backgroundColor: "#f2f2f2",
   },
   title: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: "bold",
     marginBottom: 30,
     textAlign: "center",
+    color: "#333",
   },
-  card: {
-    backgroundColor: "#fff",
-    padding: 20,
-    borderRadius: 12,
+  button: {
+    backgroundColor: "#4CAF50",
+    padding: 16,
+    borderRadius: 10,
     marginBottom: 15,
+    alignItems: "center",
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 5,
     elevation: 3,
   },
-  cardText: {
+  buttonText: {
+    color: "#fff",
     fontSize: 18,
     fontWeight: "600",
-    textAlign: "center",
   },
 });
