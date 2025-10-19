@@ -80,6 +80,18 @@ export default function ProfileScreen({ navigation }) {
           </View>
         </View>
 
+        {user.phoneNumber && (
+          <View style={styles.infoCard}>
+            <View style={styles.infoRow}>
+              <Ionicons name="call" size={20} color="#666" />
+              <View style={styles.infoContent}>
+                <Text style={styles.infoLabel}>Phone</Text>
+                <Text style={styles.infoValue}>{user.phoneNumber}</Text>
+              </View>
+            </View>
+          </View>
+        )}
+
         <View style={styles.infoCard}>
           <View style={styles.infoRow}>
             <Ionicons name={getRoleIcon(user.role)} size={20} color={getRoleColor(user.role)} />

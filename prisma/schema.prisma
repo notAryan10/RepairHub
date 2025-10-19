@@ -1,0 +1,145 @@
+// This is your Prisma schema file
+// Learn more about it at https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  STUDENT
+  WARDEN
+  STAFF
+}
+
+enum IssueCategory {
+  PLUMBING
+  ELECTRICAL
+  FURNITURE
+  WIFI
+  OTHER
+}
+
+enum IssueStatus {
+  PENDING
+  ASSIGNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum FeedbackStatus {
+  SATISFIED
+  NOT_SATISFIED
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  password      String
+  name          String
+  role          UserRole
+  roomNumber    String?   // Only for students
+  block         String?   // Only for students
+  phoneNumber   String?
+  fcmToken      String?   // For push notifications
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relationships
+  reportedIssues     Issue[]        @relation("ReportedBy")
+  assignedIssues     Issue[]        @relation("AssignedTo")
+  notifications      Notification[]
+  feedbacksGiven     Feedback[]
+
+  @@index([email])
+}
+
+model Issue {
+  id          String        @id @default(uuid())
+  title       String
+  description String        @db.Text
+  category    IssueCategory
+  status      IssueStatus  @default(PENDING)
+  roomNumber  String
+  block       String
+  priority    Int          @default(1) 
+  isRecurring Boolean      @default(false)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  // Relationships
+  reportedBy      User          @relation("ReportedBy", fields: [reportedById], references: [id])
+  reportedById    String
+  assignedTo      User?         @relation("AssignedTo", fields: [assignedToId], references: [id])
+  assignedToId    String?
+  statusUpdates   StatusUpdate[]
+  feedback        Feedback?
+  notifications   Notification[]
+  images          IssueImage[]
+
+  @@index([status])
+  @@index([category])
+  @@index([roomNumber, block])
+}
+
+model StatusUpdate {
+  id        String   @id @default(uuid())
+  status    IssueStatus
+  comment   String?  @db.Text
+  createdAt DateTime @default(now())
+
+  // Relationships
+  issue     Issue    @relation(fields: [issueId], references: [id])
+  issueId   String
+
+  @@index([issueId])
+}
+
+model Feedback {
+  id        String         @id @default(uuid())
+  status    FeedbackStatus
+  comment   String?        @db.Text
+  createdAt DateTime       @default(now())
+
+  // Relationships
+  issue     Issue          @relation(fields: [issueId], references: [id])
+  issueId   String        @unique
+  user      User          @relation(fields: [userId], references: [id])
+  userId    String
+
+  @@index([userId])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  // Relationships
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  issue     Issue?   @relation(fields: [issueId], references: [id])
+  issueId   String?
+
+  @@index([userId])
+  @@index([issueId])
+}
+
+model IssueImage {
+  id        String   @id @default(uuid())
+  url       String   @db.Text
+  createdAt DateTime @default(now())
+
+  // Relationships
+  issue     Issue    @relation(fields: [issueId], references: [id])
+  issueId   String
+
+  @@index([issueId])
+}

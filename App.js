@@ -1,9 +1,9 @@
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
-import { StatusBar } from "expo-status-bar";
 import { Provider as PaperProvider } from "react-native-paper";
 import { AuthProvider } from "./context/AuthContext";
 import AppNavigator from "./navigation/AppNavigator";
+import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 
 const theme = {
   colors: {
@@ -19,13 +19,16 @@ const theme = {
 
 export default function App() {
   return (
+    <SafeAreaProvider>
+      <SafeAreaView style={{flex: 1}}>
     <PaperProvider theme={theme}>
       <AuthProvider>
         <NavigationContainer>
-          <StatusBar style="auto" />
           <AppNavigator />
         </NavigationContainer>
       </AuthProvider>
     </PaperProvider>
+    </SafeAreaView>
+    </SafeAreaProvider>
   );
 }

@@ -11,6 +11,7 @@ export default function SignupScreen({ navigation }) {
   const [role, setRole] = useState("student");
   const [roomNumber, setRoomNumber] = useState("");
   const [block, setBlock] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showRoleModal, setShowRoleModal] = useState(false);
   const { register } = useAuth();
@@ -43,9 +44,14 @@ export default function SignupScreen({ navigation }) {
       return
     }
 
+    if (!phoneNumber) {
+      Alert.alert("Error", "Please enter your phone number")
+      return
+    }
+
     setIsLoading(true);
     try {
-      const result = await register(name, email, password, role, roomNumber, block)
+  const result = await register(name, email, password, role, roomNumber, block, phoneNumber)
       if (!result.success) {
         Alert.alert("Registration Failed", result.error || "Registration failed")
       }
@@ -78,6 +84,9 @@ export default function SignupScreen({ navigation }) {
 
           <Text style={styles.label}>Email</Text>
           <TextInput style={styles.input} placeholder="Enter your email" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none"/>
+
+          <Text style={styles.label}>Phone Number</Text>
+          <TextInput style={styles.input} placeholder="Enter your phone number" value={phoneNumber} onChangeText={setPhoneNumber} keyboardType="phone-pad"/>
 
           <Text style={styles.label}>Password</Text>
           <TextInput style={styles.input} placeholder="Enter your password" secureTextEntry value={password} onChangeText={setPassword}/>

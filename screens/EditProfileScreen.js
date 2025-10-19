@@ -9,6 +9,7 @@ export default function EditProfileScreen({ navigation }) {
   const [email, setEmail] = useState(user?.email || "")
   const [roomNumber, setRoomNumber] = useState(user?.roomNumber || "")
   const [block, setBlock] = useState(user?.block || "")
+  const [phoneNumber, setPhoneNumber] = useState(user?.phoneNumber || "")
   const [isLoading, setIsLoading] = useState(false)
 
   const handleSave = async () => {
@@ -26,6 +27,7 @@ export default function EditProfileScreen({ navigation }) {
       const updates = {
         name: name.trim(),
         email: email.trim(),
+        phoneNumber: phoneNumber.trim(),
         ...(user.role === 'student' && {
           roomNumber: roomNumber.trim(),
           block: block.trim()
