@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import {View,Text,TextInput,TouchableOpacity,StyleSheet,ScrollView,Alert,KeyboardAvoidingView,Platform} from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, KeyboardAvoidingView, Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
 
@@ -34,6 +34,15 @@ export default function EditProfileScreen({ navigation }) {
         })
       }
 
+      if (isLoading) {
+        return (
+          <View style={styles.loadingContainer}>
+            <Text>Saving...</Text>
+          </View>
+        )
+      }
+      
+
       const result = await updateUser(updates);
       if (result.success) {
         Alert.alert("Success", "Profile updated successfully", [
@@ -62,8 +71,8 @@ export default function EditProfileScreen({ navigation }) {
   };
 
   return (
-    <KeyboardAvoidingView style={styles.container} >
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 80}>
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
           <Text style={styles.title}>Edit Profile</Text>
           <Text style={styles.subtitle}>Update your account information</Text>

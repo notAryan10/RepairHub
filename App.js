@@ -21,14 +21,14 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <SafeAreaView style={{flex: 1}}>
-    <PaperProvider theme={theme}>
-      <AuthProvider>
-        <NavigationContainer>
-          <AppNavigator />
-        </NavigationContainer>
-      </AuthProvider>
-    </PaperProvider>
-    </SafeAreaView>
+        <PaperProvider theme={theme}>
+          <AuthProvider>
+            <NavigationContainer>
+              <AppNavigator />
+            </NavigationContainer>
+          </AuthProvider>
+        </PaperProvider>
+      </SafeAreaView>
     </SafeAreaProvider>
   );
 }

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert,ScrollView, KeyboardAvoidingView, Modal} from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, KeyboardAvoidingView, Platform, Modal } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
 
@@ -37,9 +37,17 @@ export default function LoginScreen({ navigation }) {
     }
   };
 
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text>Saving...</Text>
+      </View>
+    )
+  }
+
   return (
-    <KeyboardAvoidingView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={Platform.OS === 'ios' ? 70 : 100}>
+      <ScrollView  contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
           <Text style={styles.title}>RepairHub</Text>
           <Text style={styles.subtitle}>Maintenance Management System</Text>

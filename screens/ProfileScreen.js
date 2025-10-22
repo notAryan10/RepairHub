@@ -4,10 +4,10 @@ import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
 
 export default function ProfileScreen({ navigation }) {
-  const { user, logout } = useAuth();
+  const { user, logout } = useAuth()
 
   const handleEditProfile = () => {
-    navigation.navigate("EditProfile");
+    navigation.navigate("EditProfile")
   };
 
   const handleLogout = () => {
@@ -15,8 +15,8 @@ export default function ProfileScreen({ navigation }) {
       [
         { text: "Cancel", style: "cancel" },
         {text: "Logout", style: "destructive", onPress: async () => {await logout()}}]
-    );
-  };
+    )
+  }
 
   const getRoleIcon = (role) => {
     switch (role) {
@@ -26,7 +26,7 @@ export default function ProfileScreen({ navigation }) {
       case 'technician': return 'construct';
       default: return 'person';
     }
-  };
+  }
 
   const getRoleColor = (role) => {
     switch (role) {
@@ -36,7 +36,7 @@ export default function ProfileScreen({ navigation }) {
       case 'technician': return '#9C27B0';
       default: return '#666';
     }
-  };
+  }
 
   return (
     <ScrollView style={styles.container}>

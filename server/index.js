@@ -41,7 +41,7 @@ const authenticateToken = async (req, res, next) => {
 app.post('/api/auth/register', async (req, res) => {
   console.log('Registration request body:', req.body); 
   try {
-    const { name, email, password, role, roomNumber, block } = req.body;
+    const { name, email, password, role, roomNumber, block, phoneNumber } = req.body;
 
     const existingUser = await prisma.user.findUnique({
       where: { email },
@@ -51,12 +51,20 @@ app.post('/api/auth/register', async (req, res) => {
       return res.status(400).json({ message: 'Email already registered' })
     }
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt)
+    const hashedPassword = await bcrypt.hash(password, 10)
 
     const user = await prisma.user.create({
-      data: { name, email, password: hashedPassword, role: role.toUpperCase(), roomNumber, block },
-      select: { id: true,email: true, name: true,role: true, roomNumber: true,block: true},
+      data: {name, email, password: hashedPassword, role: role.toUpperCase(), roomNumber, block, phoneNumber },
+      select: { 
+        id: true,
+        email: true, 
+        name: true,
+        role: true, 
+        roomNumber: true,
+        block: true,
+        phoneNumber: true,
+        createdAt: true
+      },
     })
 
     const token = jwt.sign(

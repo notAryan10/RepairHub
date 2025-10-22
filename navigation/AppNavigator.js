@@ -24,8 +24,7 @@ function MainTabs() {
         tabBarActiveTintColor: '#4CAF50',
         tabBarInactiveTintColor: 'gray',
         headerShown: false,
-      })}
-    >
+      })} >
       <Tab.Screen name="Home" component={RoleHomeScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
@@ -52,15 +51,10 @@ export default function AppNavigator() {
         <>
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Signup" component={SignupScreen} />
-        </>
-      ) : (
+        </>) : (
         <>
           <Stack.Screen name="Main" component={MainTabs} />
-          <Stack.Screen
-            name="EditProfile"
-            component={EditProfileScreen}
-            options={{ headerShown: true, title: "Edit Profile" }}
-          />
+          <Stack.Screen name="EditProfile" component={EditProfileScreen}  options={{ headerShown: true, title: "Edit Profile" }}/>
         </>
       )}
     </Stack.Navigator>

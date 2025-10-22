@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import jwtDecode from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 
 const API_URL = 'http://192.168.0.113:3000/api';
 const AuthContext = createContext();
@@ -22,60 +22,67 @@ export const AuthProvider = ({ children }) => {
   const ROLES = {STUDENT: 'student',WARDEN: 'warden',STAFF: 'staff',TECHNICIAN: 'technician'}
 
   useEffect(() => {
+    console.log('AuthProvider: Loading stored user...');
     loadStoredUser();
   }, []);
 
   const loadStoredUser = async () => {
     try {
-  const storedUser = await AsyncStorage.getItem('user');
+      const storedUser = await AsyncStorage.getItem('user');
       if (storedUser) {
         const userData = JSON.parse(storedUser);
         
-        try {const decodedToken = jwtDecode(userData.token);
+        try {
+          const decodedToken = jwtDecode(userData.token);
           const currentTime = Date.now() / 1000;
           
           if (decodedToken.exp > currentTime) {
-            const response = await axios.get(`${API_URL}/auth/verify`, {headers: {Authorization: `Bearer ${userData.token}`}
-            });
-            
-            if (response.data.isValid) {
-              setUser(userData);
-              setIsAuthenticated(true);
-            } else {
-              await AsyncStorage.removeItem('user')
-            }
-          } else {await AsyncStorage.removeItem('user')}
+            setUser(userData);
+            setIsAuthenticated(true);
+            console.log('✅ User restored from storage:', userData.email);
+            console.log('✅ Authentication state set to true');
+          } else {
+            console.log('❌ Token expired, removing from storage');
+            await AsyncStorage.removeItem('user');
+          }
         } catch (error) {
-          console.log('Token validation failed:', error)
-            await AsyncStorage.removeItem('user')
+          console.log('Token validation failed:', error);
+          await AsyncStorage.removeItem('user');
         }
+      } else {
+        console.log('❌ No stored user found');
       }
     } catch (error) {
-      console.error('Error loading stored user:', error)
+      console.error('❌ Error loading stored user:', error);
     } finally {
+      console.log('✅ Auth loading completed, isLoading set to false');
       setIsLoading(false);
     }
   };
 
-  const login = async (email, password) => {
+  const login = async (email, password, role) => {
     try {
-      setIsLoading(true)
-      const response = await axios.post(`${API_URL}/auth/login`, {email,password});
+      setIsLoading(true);
+      const response = await axios.post(`${API_URL}/auth/login`, { email, password, role });
 
       const { token, user } = response.data;
       
-      const userData = {...user,token}
-
-  await AsyncStorage.setItem('user', JSON.stringify(userData));
+      const userData = { ...user, token };
+      
+      await AsyncStorage.setItem('user', JSON.stringify(userData));
       setUser(userData);
       setIsAuthenticated(true);
       
-      return { success: true, user: userData }
+      console.log('Login successful, user stored:', userData.email);
+      return { success: true, user: userData };
     } catch (error) {
-      console.error('Login error:', error.response?.data?.message || error.message);
-      return { success: false, error: error.response?.data?.message || 'Login failed. Please try again.'}
+      console.log('Login error:', error.response?.data?.message || error.message);
+      return { 
+        success: false, 
+        error: error.response?.data?.message || 'Login failed. Please try again.' 
+      };
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   };
 
@@ -94,7 +101,7 @@ export const AuthProvider = ({ children }) => {
       
       return { success: true, user: userData }
     } catch (error) {
-      console.error('Registration error:', error.response?.data?.message || error.message)
+      console.log('Registration error:', error.response?.data?.message || error.message)
       return { 
         success: false, 
         error: error.response?.data?.message || 'Registration failed. Please try again.' 
@@ -106,11 +113,12 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-  await AsyncStorage.removeItem('user')
+      await AsyncStorage.removeItem('user');
       setUser(null);
       setIsAuthenticated(false);
+      console.log('User logged out successfully');
     } catch (error) {
-      console.error('Logout error:', error)
+      console.log('Logout error:', error);
     }
   };
 
@@ -128,7 +136,7 @@ export const AuthProvider = ({ children }) => {
       setUser(updatedUser);
       return { success: true, user: updatedUser };
     } catch (error) {
-      console.error('Update user error:', error.response?.data || error.message);
+      console.log('Update user error:', error.response?.data || error.message);
       return { success: false, error: error.response?.data?.message || error.message };
     }
   };
