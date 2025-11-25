@@ -3,9 +3,9 @@ const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
+const prisma = new PrismaClient()
 
 const app = express();
-const prisma = new PrismaClient();
 const JWT_SECRET = 'repairhub-secret-key'; 
 
 app.use(cors());
@@ -39,7 +39,6 @@ const authenticateToken = async (req, res, next) => {
 };
 
 app.post('/api/auth/register', async (req, res) => {
-  console.log('Registration request body:', req.body); 
   try {
     const { name, email, password, role, roomNumber, block, phoneNumber } = req.body;
 
@@ -124,6 +123,91 @@ app.patch('/api/auth/profile', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Update profile error:', error);
     res.status(500).json({ message: 'Update failed' });
+  }
+});
+
+app.get('/api/user/stats', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    
+    const [reportedCount, resolvedCount, pendingCount] = await Promise.all([
+      prisma.issue.count({
+        where: { reportedById: userId }
+      }),
+      prisma.issue.count({
+        where: { 
+          reportedById: userId,
+          status: 'COMPLETED'
+        }
+      }),
+      prisma.issue.count({
+        where: { 
+          reportedById: userId,
+          status: { in: ['PENDING', 'IN_PROGRESS'] }
+        }
+      })
+    ]);
+
+    res.json({
+      reported: reportedCount,
+      resolved: resolvedCount,
+      pending: pendingCount
+    });
+  } catch (error) {
+    console.error('Error fetching user stats:', error);
+    res.status(500).json({ 
+      message: 'Failed to fetch user statistics',
+      error: error.message 
+    });
+  }
+})
+
+app.post('/api/reports', authenticateToken, async (req, res) => {
+  try {
+    const { title, description, location, category = 'OTHER' } = req.body;
+    const userId = req.user.id;
+    
+    // Validate the category
+    const validCategories = ['PLUMBING', 'ELECTRICAL', 'FURNITURE', 'WIFI', 'OTHER'];
+    const issueCategory = validCategories.includes(category.toUpperCase()) 
+      ? category.toUpperCase() 
+      : 'OTHER';
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { roomNumber: true, block: true }
+    });
+
+    const issue = await prisma.issue.create({
+      data: {
+        title,
+        description,
+        category: issueCategory,
+        status: 'PENDING',
+        roomNumber: location,
+        block: user.block || 'UNKNOWN',
+        reportedBy: { connect: { id: userId }}
+      },
+      include: {
+        reportedBy: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            roomNumber: true,
+            block: true
+          }
+        }
+      }
+    });
+
+    res.status(201).json({ issue });
+  } catch (error) {
+    console.error('Error creating report:', error);
+    res.status(500).json({ 
+      message: 'Failed to submit report',
+      error: error.message 
+    });
   }
 });
 

@@ -9,6 +9,7 @@ import SignupScreen from "../screens/SignupScreen";
 import RoleHomeScreen from "../screens/RoleHomeScreen";
 import ProfileScreen from "../screens/ProfileScreen";
 import EditProfileScreen from "../screens/EditProfileScreen";
+import ReportScreen from "../screens/ReportScreen";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -18,8 +19,8 @@ function MainTabs() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ color, size }) => {
-          const iconName = route.name === 'Home' ? 'home' : 'person';
-          return <Ionicons name={`${iconName}-outline`} size={size} color={color} />;
+          const iconName = route.name === 'Home' ? 'home' : 'person'
+          return <Ionicons name={`${iconName}-outline`} size={size} color={color} />
         },
         tabBarActiveTintColor: '#4CAF50',
         tabBarInactiveTintColor: 'gray',
@@ -39,10 +40,10 @@ function LoadingScreen() {
 }
 
 export default function AppNavigator() {
-  const { isAuthenticated, isLoading, user } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth()
 
   if (isLoading) {
-    return <LoadingScreen />;
+    return <LoadingScreen />
   }
 
   return (
@@ -54,9 +55,10 @@ export default function AppNavigator() {
         </>) : (
         <>
           <Stack.Screen name="Main" component={MainTabs} />
-          <Stack.Screen name="EditProfile" component={EditProfileScreen}  options={{ headerShown: true, title: "Edit Profile" }}/>
+          <Stack.Screen name="EditProfile" component={EditProfileScreen} options={{ headerShown: true, title: "Edit Profile" }}/>
+          <Stack.Screen name="Report" component={ReportScreen} options={{ headerShown: true, title: "Report an Issue" }}/>
         </>
       )}
     </Stack.Navigator>
-  );
+  )
 }

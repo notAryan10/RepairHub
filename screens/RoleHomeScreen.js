@@ -1,12 +1,26 @@
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert, Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+
+// Use the same API URL configuration as in AuthContext
+const API_URL = Platform.select({
+  android: 'http://10.123.2.90:8081/api',
+  ios: 'http://localhost:3000/api',
+  default: 'http://localhost:3000/api'
+});
 
 export default function RoleHomeScreen({ navigation }) {
   const { user, logout } = useAuth();
+  const [stats, setStats] = useState({
+    reported: 0,
+    resolved: 0,
+    pending: 0
+  });
   
-  console.log('Full user object:', user);
-  console.log('User role specifically:', user?.role);
+  // console.log('Full user object:', user);
+  // console.log('User role specifically:', user?.role);
 
   const handleLogout = () => {
     Alert.alert("Logout","Are you sure you want to logout?",[{ text: "Cancel", style: "cancel" },{ text: "Logout", style: "destructive", onPress: logout }])
@@ -33,12 +47,12 @@ export default function RoleHomeScreen({ navigation }) {
   }
 
   const getQuickActions = () => {
-    console.log('Current user role:', user?.role);
-    console.log('Role type:', typeof user?.role);
+    console.log('Current user role:', user?.role)
+    console.log('Role type:', typeof user?.role)
     switch (user?.role?.toLowerCase()) {
       case 'student':
         return [
-          { title: "Report Issue", icon: "add-circle", color: "#4CAF50", onPress: () => Alert.alert("Coming Soon", "Report maintenance issues in your room!")},
+          { title: "Report Issue", icon: "add-circle", color: "#4CAF50", onPress: () => navigation.navigate('Report')},
           { title: "My Issues", icon: "list", color: "#2196F3", onPress: () => Alert.alert("Coming Soon", "Track your reported issues!")},
           { title: "Room Status", icon: "home", color: "#FF9800", onPress: () => Alert.alert("Coming Soon", "Check your room maintenance status!")},
           { title: "Feedback", icon: "star", color: "#9C27B0", onPress: () => Alert.alert("Coming Soon", "Rate completed repairs!")}
@@ -72,7 +86,7 @@ export default function RoleHomeScreen({ navigation }) {
 
       default:
         return [
-          { title: "Report Issue", icon: "add-circle", color: "#4CAF50", onPress: () => Alert.alert("Coming Soon", "Report maintenance issues!")},
+          { title: "Report Issue", icon: "add-circle", color: "#4CAF50", onPress: () => navigation.navigate('Report')},
           { title: "My Issues", icon: "list", color: "#2196F3", onPress: () => Alert.alert("Coming Soon", "View your issues!")}
         ]
     }
@@ -82,32 +96,28 @@ export default function RoleHomeScreen({ navigation }) {
     switch (user?.role?.toLowerCase()) {
       case 'student':
         return [
-          { label: "Issues Reported", value: "0" },
-          { label: "Issues Resolved", value: "0" },
-          { label: "Pending", value: "0" }
+          { label: "Issues Reported", value: stats.reported.toString() },
+          { label: "Issues Resolved", value: stats.resolved.toString() },
+          { label: "Pending", value: stats.pending.toString() }
         ]
-
       case 'warden':
         return [
           { label: "Total Issues", value: "0" },
           { label: "Urgent Issues", value: "0" },
           { label: "Resolved", value: "0" }
         ]
-
       case 'staff':
         return [
           { label: "Assigned Tasks", value: "0" },
           { label: "Completed", value: "0" },
           { label: "In Progress", value: "0" }
         ]
-
       case 'technician':
         return [
           { label: "Active Tasks", value: "0" },
           { label: "Completed", value: "0" },
           { label: "Parts Needed", value: "0" }
         ]
-
       default:
         return [
           { label: "Issues Reported", value: "0" },
@@ -115,7 +125,7 @@ export default function RoleHomeScreen({ navigation }) {
           { label: "Pending", value: "0" }
         ]
     }
-  };
+  }
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -132,9 +142,7 @@ export default function RoleHomeScreen({ navigation }) {
           <View style={styles.userDetails}>
             <Text style={styles.userName}>{user?.name || "User"}</Text>
             <Text style={styles.userRole}>{user?.role?.toUpperCase() || "UNKNOWN"}</Text>
-            {user?.roomNumber && (
-              <Text style={styles.userLocation}>Room {user.roomNumber}, Block {user.block}</Text>
-            )}
+            {user?.roomNumber && (<Text style={styles.userLocation}>Room {user.roomNumber}, Block {user.block}</Text>)}
           </View>
         </View>
       </View>
@@ -143,11 +151,7 @@ export default function RoleHomeScreen({ navigation }) {
         <Text style={styles.sectionTitle}>Quick Actions</Text>
         <View style={styles.actionsGrid}>
           {getQuickActions().map((action, index) => (
-            <TouchableOpacity 
-              key={index}
-              style={[styles.actionCard, { borderLeftColor: action.color }]} 
-              onPress={action.onPress}
-            >
+            <TouchableOpacity key={index} style={[styles.actionCard, { borderLeftColor: action.color }]} onPress={action.onPress}>
               <Ionicons name={action.icon} size={24} color={action.color} />
               <Text style={styles.actionTitle}>{action.title}</Text>
             </TouchableOpacity>
@@ -167,7 +171,6 @@ export default function RoleHomeScreen({ navigation }) {
         </View>
       </View>
 
-      {/* Logout Button */}
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <Ionicons name="log-out" size={20} color="#F44336" />
         <Text style={styles.logoutButtonText}>Logout</Text>

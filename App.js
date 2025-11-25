@@ -1,12 +1,15 @@
-import React from "react";
-import { NavigationContainer } from "@react-navigation/native";
-import { Provider as PaperProvider } from "react-native-paper";
-import { AuthProvider } from "./context/AuthContext";
-import AppNavigator from "./navigation/AppNavigator";
-import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
+import React from 'react';
+import { SafeAreaView } from 'react-native';
+import { Provider as PaperProvider, DefaultTheme } from 'react-native-paper';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { NavigationContainer } from '@react-navigation/native';
+import { AuthProvider } from './context/AuthContext';
+import AppNavigator from './navigation/AppNavigator';
 
 const theme = {
+  ...DefaultTheme,
   colors: {
+    ...DefaultTheme.colors,
     primary: '#4CAF50',
     accent: '#FF9800',
     background: '#f5f5f5',
@@ -20,7 +23,7 @@ const theme = {
 export default function App() {
   return (
     <SafeAreaProvider>
-      <SafeAreaView style={{flex: 1}}>
+      <SafeAreaView style={{ flex: 1 }}>
         <PaperProvider theme={theme}>
           <AuthProvider>
             <NavigationContainer>

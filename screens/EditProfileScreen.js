@@ -12,6 +12,7 @@ export default function EditProfileScreen({ navigation }) {
   const [phoneNumber, setPhoneNumber] = useState(user?.phoneNumber || "")
   const [isLoading, setIsLoading] = useState(false)
 
+  
   const handleSave = async () => {
     if (!name.trim() || !email.trim()) {
       Alert.alert("Error", "Please fill in all required fields");
@@ -59,16 +60,9 @@ export default function EditProfileScreen({ navigation }) {
   };
 
   const handleLogout = () => {
-    Alert.alert(
-      "Logout",
-      "Are you sure you want to logout?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Logout", style: "destructive",
-          onPress: async () => {await logout()}}]
-    );
-  };
+    Alert.alert("Logout","Are you sure you want to logout?",
+      [{ text: "Cancel", style: "cancel" },{text: "Logout", style: "destructive",onPress: async () => {await logout()}}])
+  }
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 80}>
@@ -92,11 +86,7 @@ export default function EditProfileScreen({ navigation }) {
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Role</Text>
             <View style={styles.roleContainer}>
-              <Ionicons 
-                name={user.role === 'student' ? 'school' : 
-                      user.role === 'warden' ? 'shield' : 
-                      user.role === 'staff' ? 'people' : 'construct'} 
-                size={20} color="#4CAF50" />
+              <Ionicons name={user.role === 'student' ? 'school' : user.role === 'warden' ? 'shield' : user.role === 'staff' ? 'people' : 'construct'} size={20} color="#4CAF50" />
               <Text style={styles.roleText}>
                 {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
               </Text>
@@ -197,7 +187,8 @@ const styles = StyleSheet.create({
   roleContainer: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 16,
+    justifyContent: "center",
+    padding: 10,
     backgroundColor: "#f8f9fa",
     borderRadius: 8,
     borderWidth: 1,
