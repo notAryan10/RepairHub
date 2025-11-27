@@ -10,22 +10,24 @@ import RoleHomeScreen from "../screens/RoleHomeScreen";
 import ProfileScreen from "../screens/ProfileScreen";
 import EditProfileScreen from "../screens/EditProfileScreen";
 import ReportScreen from "../screens/ReportScreen";
+import IssuesDisplay from "../screens/IssuesDisplay";
+import RoomStatus from '../screens/RoomStatus';
+import About from "../screens/About";
+import HelpSupport from "../screens/HelpSupport";
+import Notifications from "../screens/Notifications";
+import Feedback from "../screens/Feedback";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
 function MainTabs() {
   return (
-    <Tab.Navigator
-      screenOptions={({ route }) => ({
-        tabBarIcon: ({ color, size }) => {
-          const iconName = route.name === 'Home' ? 'home' : 'person'
-          return <Ionicons name={`${iconName}-outline`} size={size} color={color} />
-        },
-        tabBarActiveTintColor: '#4CAF50',
-        tabBarInactiveTintColor: 'gray',
-        headerShown: false,
-      })} >
+    <Tab.Navigator screenOptions={({ route }) => ({
+      tabBarIcon: ({ color, size }) => {
+        const iconName = route.name === 'Home' ? 'home' : 'person'
+        return <Ionicons name={`${iconName}-outline`} size={size} color={color} />
+      }, tabBarActiveTintColor: '#4CAF50', tabBarInactiveTintColor: 'gray', headerShown: false
+    })} >
       <Tab.Screen name="Home" component={RoleHomeScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
@@ -55,8 +57,14 @@ export default function AppNavigator() {
         </>) : (
         <>
           <Stack.Screen name="Main" component={MainTabs} />
-          <Stack.Screen name="EditProfile" component={EditProfileScreen} options={{ headerShown: true, title: "Edit Profile" }}/>
-          <Stack.Screen name="Report" component={ReportScreen} options={{ headerShown: true, title: "Report an Issue" }}/>
+          <Stack.Screen name="EditProfile" component={EditProfileScreen} options={{ headerShown: true, title: "Edit Profile" }} />
+          <Stack.Screen name="Report" component={ReportScreen} options={{ headerShown: true, title: "Report an Issue" }} />
+          <Stack.Screen name="IssuesDisplay" component={IssuesDisplay} options={{ headerShown: true, title: "Your Issues" }} />
+          <Stack.Screen name="RoomStatus" component={RoomStatus} options={{ headerShown: true, title: "Room Status" }} />
+          <Stack.Screen name="About" component={About} options={{ title: "About" }} />
+          <Stack.Screen name="HelpSupport" component={HelpSupport} options={{title: "Help & Support" }} />
+          <Stack.Screen name="Notifications" component={Notifications} options={{title: "Notifications" }} />
+          <Stack.Screen name="Feedback" component={Feedback} options={{ headerShown: true, title: "Feedback" }} />
         </>
       )}
     </Stack.Navigator>

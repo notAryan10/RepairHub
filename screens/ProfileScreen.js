@@ -1,5 +1,5 @@
 import React from "react";
-import {View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert} from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
 
@@ -13,7 +13,7 @@ export default function ProfileScreen({ navigation }) {
   const handleLogout = () => {
     Alert.alert("Logout", "Are you sure you want to logout?",
       [{ text: "Cancel", style: "cancel" },
-        {text: "Logout", style: "destructive", onPress: async () => {await logout()}}]
+      { text: "Logout", style: "destructive", onPress: async () => { await logout() } }]
     )
   }
 
@@ -58,7 +58,7 @@ export default function ProfileScreen({ navigation }) {
 
       <View style={styles.infoContainer}>
         <Text style={styles.sectionTitle}>Account Information</Text>
-        
+
         <View style={styles.infoCard}>
           <View style={styles.infoRow}>
             <Ionicons name="person" size={20} color="#666" />
@@ -134,19 +134,19 @@ export default function ProfileScreen({ navigation }) {
           <Ionicons name="chevron-forward" size={20} color="#ccc" />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.actionButton}>
+        <TouchableOpacity style={styles.actionButton} onPress={() => navigation.navigate('Notifications')}>
           <Ionicons name="notifications" size={20} color="#4CAF50" />
           <Text style={styles.actionButtonText}>Notifications</Text>
           <Ionicons name="chevron-forward" size={20} color="#ccc" />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.actionButton}>
+        <TouchableOpacity style={styles.actionButton} onPress={() => navigation.navigate('HelpSupport')}>
           <Ionicons name="help-circle" size={20} color="#4CAF50" />
           <Text style={styles.actionButtonText}>Help & Support</Text>
           <Ionicons name="chevron-forward" size={20} color="#ccc" />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.actionButton}>
+        <TouchableOpacity style={styles.actionButton} onPress={() => navigation.navigate('About')}>
           <Ionicons name="information-circle" size={20} color="#4CAF50" />
           <Text style={styles.actionButtonText}>About</Text>
           <Ionicons name="chevron-forward" size={20} color="#ccc" />

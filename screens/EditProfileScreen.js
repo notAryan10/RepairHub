@@ -26,13 +26,9 @@ export default function EditProfileScreen({ navigation }) {
     setIsLoading(true);
     try {
       const updates = {
-        name: name.trim(),
-        email: email.trim(),
-        phoneNumber: phoneNumber.trim(),
+        name: name.trim(), email: email.trim(), phoneNumber: phoneNumber.trim(),
         ...(user.role === 'student' && {
-          roomNumber: roomNumber.trim(),
-          block: block.trim()
-        })
+          roomNumber: roomNumber.trim(), block: block.trim()})
       }
 
       if (isLoading) {
@@ -40,8 +36,7 @@ export default function EditProfileScreen({ navigation }) {
           <View style={styles.loadingContainer}>
             <Text>Saving...</Text>
           </View>
-        )
-      }
+        )}
       
 
       const result = await updateUser(updates);
@@ -50,14 +45,14 @@ export default function EditProfileScreen({ navigation }) {
           { text: "OK", onPress: () => navigation.goBack() }
         ])
       } else {
-        Alert.alert("Error", result.error || "Failed to update profile");
+        Alert.alert("Error", result.error || "Failed to update profile")
       }
     } catch (error) {
-      Alert.alert("Error", "An error occurred while updating profile");
+      Alert.alert("Error", "An error occurred while updating profile")
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const handleLogout = () => {
     Alert.alert("Logout","Are you sure you want to logout?",

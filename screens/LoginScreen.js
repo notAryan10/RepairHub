@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, KeyboardAvoidingView, Platform, Modal } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
@@ -11,14 +11,14 @@ export default function LoginScreen({ navigation }) {
   const [showRoleModal, setShowRoleModal] = useState(false);
   const { login } = useAuth();
 
-  const roles = [
+  const roles = useMemo(() => [
     { label: "Student", value: "student" },
     { label: "Warden", value: "warden" },
     { label: "Staff", value: "staff" },
     { label: "Technician", value: "technician" }
-  ];
+  ], []);
 
-  const handleLogin = async () => {
+  const handleLogin = useCallback(async () => {
     if (!email || !password) {
       Alert.alert("Error", "Please fill in all fields");
       return;
@@ -35,7 +35,16 @@ export default function LoginScreen({ navigation }) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [email, password, role, login]);
+
+  const handleRoleSelect = useCallback((value) => {
+    setRole(value);
+    setShowRoleModal(false);
+  }, []);
+
+  const navigateToSignup = useCallback(() => {
+    navigation.navigate("Signup");
+  }, [navigation]);
 
   if (isLoading) {
     return (
@@ -47,7 +56,7 @@ export default function LoginScreen({ navigation }) {
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={Platform.OS === 'ios' ? 70 : 100}>
-      <ScrollView  contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
           <Text style={styles.title}>RepairHub</Text>
           <Text style={styles.subtitle}>Maintenance Management System</Text>
@@ -63,20 +72,20 @@ export default function LoginScreen({ navigation }) {
           </TouchableOpacity>
 
           <Text style={styles.label}>Email</Text>
-          <TextInput 
-            style={styles.input} 
-            placeholder="Enter your email" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none"  />
+          <TextInput
+            style={styles.input}
+            placeholder="Enter your email" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
 
           <Text style={styles.label}>Password</Text>
-          <TextInput style={styles.input}  placeholder="Enter your password"  secureTextEntry  value={password}  onChangeText={setPassword}  />
+          <TextInput style={styles.input} placeholder="Enter your password" secureTextEntry value={password} onChangeText={setPassword} />
 
-          <TouchableOpacity style={[styles.button, isLoading && styles.buttonDisabled]}  onPress={handleLogin} disabled={isLoading}>
+          <TouchableOpacity style={[styles.button, isLoading && styles.buttonDisabled]} onPress={handleLogin} disabled={isLoading}>
             <Text style={styles.buttonText}>
               {isLoading ? "Logging in..." : "Login"}
             </Text>
           </TouchableOpacity>
 
-          <Text style={styles.link} onPress={() => navigation.navigate("Signup")}>
+          <Text style={styles.link} onPress={navigateToSignup}>
             Don't have an account? Sign up
           </Text>
         </View>
@@ -92,11 +101,11 @@ export default function LoginScreen({ navigation }) {
               </TouchableOpacity>
             </View>
             {roles.map((roleOption) => (
-              <TouchableOpacity key={roleOption.value} style={[styles.roleOption,role === roleOption.value && styles.selectedRoleOption ]} onPress={() => {setRole(roleOption.value); setShowRoleModal(false);}}>
+              <TouchableOpacity key={roleOption.value} style={[styles.roleOption, role === roleOption.value && styles.selectedRoleOption]} onPress={() => handleRoleSelect(roleOption.value)}>
                 <Text style={[styles.roleOptionText, role === roleOption.value && styles.selectedRoleOptionText]}>
                   {roleOption.label}
                 </Text>
-                {role === roleOption.value && ( <Ionicons name="checkmark" size={20} color="#4CAF50" /> )}
+                {role === roleOption.value && (<Ionicons name="checkmark" size={20} color="#4CAF50" />)}
               </TouchableOpacity>
             ))}
           </View>

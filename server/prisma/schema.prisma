@@ -52,6 +52,7 @@ model User {
   assignedIssues     Issue[]        @relation("AssignedTo")
   notifications      Notification[]
   feedbacksGiven     Feedback[]
+  appFeedbacks       AppFeedback[]
 
   @@index([email])
 }
@@ -139,4 +140,19 @@ model IssueImage {
   issueId   String
 
   @@index([issueId])
+}
+
+model AppFeedback {
+  id        String   @id @default(uuid())
+  category  String  
+  subject   String
+  message   String   @db.Text
+  rating    Int?     
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+
+  @@index([userId])
+  @@index([category])
 }

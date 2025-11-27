@@ -1,15 +1,11 @@
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert, Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
-import { useState, useEffect } from 'react';
+import { useFocusEffect } from "@react-navigation/native";
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
 
-// Use the same API URL configuration as in AuthContext
-const API_URL = Platform.select({
-  android: 'http://10.123.2.90:8081/api',
-  ios: 'http://localhost:3000/api',
-  default: 'http://localhost:3000/api'
-});
+import API_URL from '../config';
 
 export default function RoleHomeScreen({ navigation }) {
   const { user, logout } = useAuth();
@@ -18,81 +14,113 @@ export default function RoleHomeScreen({ navigation }) {
     resolved: 0,
     pending: 0
   });
-  
-  // console.log('Full user object:', user);
-  // console.log('User role specifically:', user?.role);
 
-  const handleLogout = () => {
-    Alert.alert("Logout","Are you sure you want to logout?",[{ text: "Cancel", style: "cancel" },{ text: "Logout", style: "destructive", onPress: logout }])
-  };
+  const fetchStats = useCallback(async () => {
+    // console.log('fetchStats called');
+    if (!user) {
+      console.log('User is null');
+      return;
+    }
+    if (!user.token) {
+      console.log('User token is missing', user);
+      return;
+    }
 
-  const getRoleIcon = (role) => {
-    switch (role?.toLowerCase()) {
+    try {
+      // console.log('Fetching stats from:', `${API_URL}/user/stats`);
+      const response = await axios.get(`${API_URL}/user/stats`, {
+        headers: { Authorization: `Bearer ${user.token}` }
+      });
+      // console.log('Stats received:', response.data);
+      setStats(response.data);
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+      if (error.response) {
+        console.error('Error response:', error.response.data);
+        console.error('Error status:', error.response.status);
+      } else if (error.request) {
+        console.error('Error request:', error.request);
+        Alert.alert("Network Error", "Could not connect to server. Check your internet connection or server status.");
+      } else {
+        console.error('Error message:', error.message);
+      }
+    }
+  }, [user?.token]);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchStats()
+    }, [fetchStats])
+  )
+  const handleLogout = useCallback(() => {
+    Alert.alert("Logout", "Are you sure you want to logout?", [{ text: "Cancel", style: "cancel" }, { text: "Logout", style: "destructive", onPress: logout }])
+  }, [logout])
+
+  const roleIcon = useMemo(() => {
+    switch (user?.role?.toLowerCase()) {
       case 'student': return 'school';
       case 'warden': return 'shield';
       case 'staff': return 'people';
       case 'technician': return 'construct';
       default: return 'person';
     }
-  }
+  }, [user?.role])
 
-  const getRoleColor = (role) => {
-    switch (role?.toLowerCase()) {
+  const roleColor = useMemo(() => {
+    switch (user?.role?.toLowerCase()) {
       case 'student': return '#4CAF50';
       case 'warden': return '#FF9800';
       case 'staff': return '#2196F3';
       case 'technician': return '#9C27B0';
       default: return '#666';
     }
-  }
+  }, [user?.role])
 
-  const getQuickActions = () => {
-    console.log('Current user role:', user?.role)
-    console.log('Role type:', typeof user?.role)
+  const quickActions = useMemo(() => {
     switch (user?.role?.toLowerCase()) {
       case 'student':
         return [
-          { title: "Report Issue", icon: "add-circle", color: "#4CAF50", onPress: () => navigation.navigate('Report')},
-          { title: "My Issues", icon: "list", color: "#2196F3", onPress: () => Alert.alert("Coming Soon", "Track your reported issues!")},
-          { title: "Room Status", icon: "home", color: "#FF9800", onPress: () => Alert.alert("Coming Soon", "Check your room maintenance status!")},
-          { title: "Feedback", icon: "star", color: "#9C27B0", onPress: () => Alert.alert("Coming Soon", "Rate completed repairs!")}
+          { title: "Report Issue", icon: "add-circle", color: "#4CAF50", onPress: () => navigation.navigate('Report') },
+          { title: "My Issues", icon: "list", color: "#2196F3", onPress: () => navigation.navigate('IssuesDisplay') },
+          { title: "Room Status", icon: "home", color: "#FF9800", onPress: () => navigation.navigate('RoomStatus') },
+          { title: "Feedback", icon: "star", color: "#9C27B0", onPress: () => navigation.navigate('Feedback') }
         ]
 
       case 'warden':
         return [
-          { title: "All Issues", icon: "eye", color: "#FF9800", onPress: () => Alert.alert("Coming Soon", "Monitor all hostel maintenance issues!")},
-          { title: "Assign Staff", icon: "people", color: "#9C27B0", onPress: () => Alert.alert("Coming Soon", "Assign issues to maintenance staff!")},
-          { title: "Priority Issues", icon: "warning", color: "#F44336", onPress: () => Alert.alert("Coming Soon", "View urgent maintenance issues!")},
-          { title: "Staff Management", icon: "settings", color: "#2196F3", onPress: () => Alert.alert("Coming Soon", "Manage maintenance staff!")},
-          { title: "Reports", icon: "bar-chart", color: "#4CAF50", onPress: () => Alert.alert("Coming Soon", "View maintenance reports!")},
-          { title: "Block Overview", icon: "business", color: "#FF5722", onPress: () => Alert.alert("Coming Soon", "Overview of all hostel blocks!")}
+          { title: "All Issues", icon: "eye", color: "#FF9800", onPress: () => Alert.alert("Coming Soon", "Monitor all hostel maintenance issues!") },
+          { title: "Assign Staff", icon: "people", color: "#9C27B0", onPress: () => Alert.alert("Coming Soon", "Assign issues to maintenance staff!") },
+          { title: "Priority Issues", icon: "warning", color: "#F44336", onPress: () => Alert.alert("Coming Soon", "View urgent maintenance issues!") },
+          { title: "Staff Management", icon: "settings", color: "#2196F3", onPress: () => Alert.alert("Coming Soon", "Manage maintenance staff!") },
+          { title: "Reports", icon: "bar-chart", color: "#4CAF50", onPress: () => Alert.alert("Coming Soon", "View maintenance reports!") },
+          { title: "Block Overview", icon: "business", color: "#FF5722", onPress: () => Alert.alert("Coming Soon", "Overview of all hostel blocks!") }
         ]
 
       case 'staff':
         return [
-          { title: "Assigned Issues", icon: "clipboard", color: "#2196F3", onPress: () => Alert.alert("Coming Soon", "View your assigned maintenance tasks!")},
-          { title: "Update Progress", icon: "checkmark-circle", color: "#4CAF50", onPress: () => Alert.alert("Coming Soon", "Update repair progress!")},
-          { title: "Available Issues", icon: "list", color: "#FF9800", onPress: () => Alert.alert("Coming Soon", "Browse available maintenance tasks!")},
-          { title: "Schedule", icon: "calendar", color: "#9C27B0", onPress: () => Alert.alert("Coming Soon", "View your maintenance schedule!")}
+          { title: "Assigned Issues", icon: "clipboard", color: "#2196F3", onPress: () => Alert.alert("Coming Soon", "View your assigned maintenance tasks!") },
+          { title: "Update Progress", icon: "checkmark-circle", color: "#4CAF50", onPress: () => Alert.alert("Coming Soon", "Update repair progress!") },
+          { title: "Available Issues", icon: "list", color: "#FF9800", onPress: () => Alert.alert("Coming Soon", "Browse available maintenance tasks!") },
+          { title: "Schedule", icon: "calendar", color: "#9C27B0", onPress: () => Alert.alert("Coming Soon", "View your maintenance schedule!") }
         ]
 
       case 'technician':
         return [
-          { title: "My Tasks", icon: "hammer", color: "#FF5722", onPress: () => Alert.alert("Coming Soon", "View your assigned repair tasks!")},
-          { title: "Update Status", icon: "checkmark", color: "#4CAF50", onPress: () => Alert.alert("Coming Soon", "Update task completion status!")},
-          { title: "Parts Needed", icon: "construct", color: "#FF9800", onPress: () => Alert.alert("Coming Soon", "Request repair parts and materials!")},
-          { title: "Time Tracking", icon: "time", color: "#2196F3", onPress: () => Alert.alert("Coming Soon", "Track time spent on repairs!")}
+          { title: "My Tasks", icon: "hammer", color: "#FF5722", onPress: () => Alert.alert("Coming Soon", "View your assigned repair tasks!") },
+          { title: "Update Status", icon: "checkmark", color: "#4CAF50", onPress: () => Alert.alert("Coming Soon", "Update task completion status!") },
+          { title: "Parts Needed", icon: "construct", color: "#FF9800", onPress: () => Alert.alert("Coming Soon", "Request repair parts and materials!") },
+          { title: "Time Tracking", icon: "time", color: "#2196F3", onPress: () => Alert.alert("Coming Soon", "Track time spent on repairs!") }
         ]
 
       default:
         return [
-          { title: "Report Issue", icon: "add-circle", color: "#4CAF50", onPress: () => navigation.navigate('Report')},
-          { title: "My Issues", icon: "list", color: "#2196F3", onPress: () => Alert.alert("Coming Soon", "View your issues!")}
+          { title: "Report Issue", icon: "add-circle", color: "#4CAF50", onPress: () => navigation.navigate('Report') },
+          { title: "My Issues", icon: "list", color: "#2196F3", onPress: () => navigation.navigate('IssuesDisplay') }
         ]
     }
-  };
+  }, [user?.role, navigation])
 
-  const getStatsForRole = () => {
+  const roleStats = useMemo(() => {
     switch (user?.role?.toLowerCase()) {
       case 'student':
         return [
@@ -125,7 +153,7 @@ export default function RoleHomeScreen({ navigation }) {
           { label: "Pending", value: "0" }
         ]
     }
-  }
+  }, [user?.role, stats])
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -136,8 +164,8 @@ export default function RoleHomeScreen({ navigation }) {
 
       <View style={styles.userCard}>
         <View style={styles.userInfo}>
-          <View style={[styles.roleIcon, { backgroundColor: getRoleColor(user?.role) }]}>
-            <Ionicons name={getRoleIcon(user?.role)} size={24} color="#fff" />
+          <View style={[styles.roleIcon, { backgroundColor: roleColor }]}>
+            <Ionicons name={roleIcon} size={24} color="#fff" />
           </View>
           <View style={styles.userDetails}>
             <Text style={styles.userName}>{user?.name || "User"}</Text>
@@ -150,7 +178,7 @@ export default function RoleHomeScreen({ navigation }) {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Quick Actions</Text>
         <View style={styles.actionsGrid}>
-          {getQuickActions().map((action, index) => (
+          {quickActions.map((action, index) => (
             <TouchableOpacity key={index} style={[styles.actionCard, { borderLeftColor: action.color }]} onPress={action.onPress}>
               <Ionicons name={action.icon} size={24} color={action.color} />
               <Text style={styles.actionTitle}>{action.title}</Text>
@@ -162,7 +190,7 @@ export default function RoleHomeScreen({ navigation }) {
       <View style={styles.statsCard}>
         <Text style={styles.sectionTitle}>Your Stats</Text>
         <View style={styles.statsGrid}>
-          {getStatsForRole().map((stat, index) => (
+          {roleStats.map((stat, index) => (
             <View key={index} style={styles.statItem}>
               <Text style={styles.statNumber}>{stat.value}</Text>
               <Text style={styles.statLabel}>{stat.label}</Text>
