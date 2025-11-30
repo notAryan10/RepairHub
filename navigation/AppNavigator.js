@@ -16,6 +16,8 @@ import About from "../screens/About";
 import HelpSupport from "../screens/HelpSupport";
 import Notifications from "../screens/Notifications";
 import Feedback from "../screens/Feedback";
+import AssignIssueScreen from '../screens/AssignIssueScreen';
+import AssignedIssuesScreen from '../screens/AssignedIssuesScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -62,9 +64,11 @@ export default function AppNavigator() {
           <Stack.Screen name="IssuesDisplay" component={IssuesDisplay} options={{ headerShown: true, title: "Your Issues" }} />
           <Stack.Screen name="RoomStatus" component={RoomStatus} options={{ headerShown: true, title: "Room Status" }} />
           <Stack.Screen name="About" component={About} options={{ title: "About" }} />
-          <Stack.Screen name="HelpSupport" component={HelpSupport} options={{title: "Help & Support" }} />
-          <Stack.Screen name="Notifications" component={Notifications} options={{title: "Notifications" }} />
+          <Stack.Screen name="HelpSupport" component={HelpSupport} options={{ title: "Help & Support" }} />
+          <Stack.Screen name="Notifications" component={Notifications} options={{ title: "Notifications" }} />
           <Stack.Screen name="Feedback" component={Feedback} options={{ headerShown: true, title: "Feedback" }} />
+          <Stack.Screen name="AssignIssue" component={AssignIssueScreen} options={{ headerShown: true, title: "Assign Issues" }} />
+          <Stack.Screen name="AssignedIssues" component={AssignedIssuesScreen} options={{ headerShown: true, title: "My Assigned Issues" }} />
         </>
       )}
     </Stack.Navigator>

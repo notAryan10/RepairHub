@@ -89,7 +89,7 @@ export default function RoleHomeScreen({ navigation }) {
       case 'warden':
         return [
           { title: "All Issues", icon: "eye", color: "#FF9800", onPress: () => Alert.alert("Coming Soon", "Monitor all hostel maintenance issues!") },
-          { title: "Assign Staff", icon: "people", color: "#9C27B0", onPress: () => Alert.alert("Coming Soon", "Assign issues to maintenance staff!") },
+          { title: "Assign Staff", icon: "people", color: "#9C27B0", onPress: () => navigation.navigate('AssignIssue') },
           { title: "Priority Issues", icon: "warning", color: "#F44336", onPress: () => Alert.alert("Coming Soon", "View urgent maintenance issues!") },
           { title: "Staff Management", icon: "settings", color: "#2196F3", onPress: () => Alert.alert("Coming Soon", "Manage maintenance staff!") },
           { title: "Reports", icon: "bar-chart", color: "#4CAF50", onPress: () => Alert.alert("Coming Soon", "View maintenance reports!") },
@@ -98,7 +98,7 @@ export default function RoleHomeScreen({ navigation }) {
 
       case 'staff':
         return [
-          { title: "Assigned Issues", icon: "clipboard", color: "#2196F3", onPress: () => Alert.alert("Coming Soon", "View your assigned maintenance tasks!") },
+          { title: "Assigned Issues", icon: "clipboard", color: "#2196F3", onPress: () => navigation.navigate('AssignedIssues') },
           { title: "Update Progress", icon: "checkmark-circle", color: "#4CAF50", onPress: () => Alert.alert("Coming Soon", "Update repair progress!") },
           { title: "Available Issues", icon: "list", color: "#FF9800", onPress: () => Alert.alert("Coming Soon", "Browse available maintenance tasks!") },
           { title: "Schedule", icon: "calendar", color: "#9C27B0", onPress: () => Alert.alert("Coming Soon", "View your maintenance schedule!") }

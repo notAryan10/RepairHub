@@ -131,10 +131,10 @@ app.get('/api/user/stats', authenticateToken, async (req, res) => {
         where: { reportedById: userId }
       }),
       prisma.issue.count({
-        where: {reportedById: userId,status: 'COMPLETED'}
+        where: { reportedById: userId, status: 'COMPLETED' }
       }),
       prisma.issue.count({
-        where: {reportedById: userId,status: { in: ['PENDING', 'IN_PROGRESS'] }}
+        where: { reportedById: userId, status: { in: ['PENDING', 'IN_PROGRESS'] } }
       })
     ])
 
@@ -145,7 +145,7 @@ app.get('/api/user/stats', authenticateToken, async (req, res) => {
     })
   } catch (error) {
     console.error('Error fetching user stats:', error)
-    res.status(500).json({message: 'Failed to fetch user statistics',error: error.message})
+    res.status(500).json({ message: 'Failed to fetch user statistics', error: error.message })
   }
 })
 
@@ -172,14 +172,14 @@ app.post('/api/reports', authenticateToken, async (req, res) => {
         reportedBy: { connect: { id: userId } }
       },
       include: {
-        reportedBy: {select: {id: true,name: true,email: true,roomNumber: true, block: true}}
+        reportedBy: { select: { id: true, name: true, email: true, roomNumber: true, block: true } }
       }
     })
 
     res.status(201).json({ issue });
   } catch (error) {
     console.error('Error creating report:', error)
-    res.status(500).json({message: 'Failed to submit report',error: error.message})
+    res.status(500).json({ message: 'Failed to submit report', error: error.message })
   }
 })
 
@@ -195,7 +195,7 @@ app.get('/api/reports', authenticateToken, async (req, res) => {
         createdAt: 'desc'
       },
       include: {
-        reportedBy: {select: {name: true,email: true}}
+        reportedBy: { select: { name: true, email: true } }
       }
     })
 
@@ -231,11 +231,11 @@ app.get('/api/room/issues', authenticateToken, async (req, res) => {
         createdAt: 'desc'
       },
       include: {
-        reportedBy: {select: {name: true,email: true}}
+        reportedBy: { select: { name: true, email: true } }
       }
     })
 
-    res.json({roomNumber: user.roomNumber,block: user.block,issues})
+    res.json({ roomNumber: user.roomNumber, block: user.block, issues })
   } catch (error) {
     console.error('Error fetching room issues:', error);
     res.status(500).json({
@@ -244,6 +244,75 @@ app.get('/api/room/issues', authenticateToken, async (req, res) => {
     });
   }
 })
+
+app.get('/api/warden/issues', authenticateToken, async (req, res) => {
+  try {
+    const issues = await prisma.issue.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: {
+        reportedBy: { select: { name: true, roomNumber: true, block: true } },
+        assignedTo: { select: { name: true } }
+      }
+    });
+    res.json(issues);
+  } catch (error) {
+    console.error('Error fetching all issues:', error);
+    res.status(500).json({ message: 'Failed to fetch issues' });
+  }
+});
+
+app.get('/api/staff/list', authenticateToken, async (req, res) => {
+  try {
+    const staff = await prisma.user.findMany({
+      where: { role: 'STAFF' },
+      select: { id: true, name: true, email: true }
+    });
+    res.json(staff);
+  } catch (error) {
+    console.error('Error fetching staff list:', error);
+    res.status(500).json({ message: 'Failed to fetch staff list' });
+  }
+});
+
+app.patch('/api/issues/:id/assign', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { staffId } = req.body;
+
+    const issue = await prisma.issue.update({
+      where: { id },
+      data: {
+        assignedToId: staffId,
+        status: 'ASSIGNED'
+      },
+      include: {
+        assignedTo: { select: { name: true } }
+      }
+    });
+
+    res.json(issue);
+  } catch (error) {
+    console.error('Error assigning issue:', error);
+    res.status(500).json({ message: 'Failed to assign issue' });
+  }
+});
+
+app.get('/api/staff/assigned-issues', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const issues = await prisma.issue.findMany({
+      where: { assignedToId: userId },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        reportedBy: { select: { name: true, roomNumber: true, block: true } }
+      }
+    });
+    res.json(issues);
+  } catch (error) {
+    console.error('Error fetching assigned issues:', error);
+    res.status(500).json({ message: 'Failed to fetch assigned issues' });
+  }
+});
 
 app.post('/api/feedback', authenticateToken, async (req, res) => {
   try {
@@ -258,18 +327,18 @@ app.post('/api/feedback', authenticateToken, async (req, res) => {
       return res.status(400).json({ message: 'Rating must be between 1 and 5' })
     }
     const feedback = await prisma.appFeedback.create({
-      data: {category,subject,message,rating: rating || null,userId},
-      include: {user: {select: {id: true,name: true,email: true,role: true}}}
+      data: { category, subject, message, rating: rating || null, userId },
+      include: { user: { select: { id: true, name: true, email: true, role: true } } }
     })
 
     res.status(201).json({
-      success: true,feedback,
+      success: true, feedback,
       message: 'Feedback submitted successfully'
     })
   } catch (error) {
     console.error('Error submitting feedback:', error);
     console.error('Error stack:', error.stack);
-    res.status(500).json({message: 'Failed to submit feedback',error: error.message})
+    res.status(500).json({ message: 'Failed to submit feedback', error: error.message })
   }
 })
 
