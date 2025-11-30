@@ -125,24 +125,43 @@ app.patch('/api/auth/profile', authenticateToken, async (req, res) => {
 app.get('/api/user/stats', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
+    const role = req.user.role;
 
-    const [reportedCount, resolvedCount, pendingCount] = await Promise.all([
-      prisma.issue.count({
-        where: { reportedById: userId }
-      }),
-      prisma.issue.count({
-        where: { reportedById: userId, status: 'COMPLETED' }
-      }),
-      prisma.issue.count({
-        where: { reportedById: userId, status: { in: ['PENDING', 'IN_PROGRESS'] } }
-      })
-    ])
-
-    res.json({
-      reported: reportedCount,
-      resolved: resolvedCount,
-      pending: pendingCount
-    })
+    if (role === 'WARDEN') {
+      const [totalCount, resolvedCount, pendingCount] = await Promise.all([
+        prisma.issue.count(),
+        prisma.issue.count({ where: { status: 'COMPLETED' } }),
+        prisma.issue.count({ where: { status: { in: ['PENDING', 'IN_PROGRESS', 'ASSIGNED'] } } })
+      ]);
+      return res.json({
+        reported: totalCount,
+        resolved: resolvedCount,
+        pending: pendingCount
+      });
+    } else if (role === 'STAFF' || role === 'TECHNICIAN') {
+      const [assignedCount, completedCount, inProgressCount] = await Promise.all([
+        prisma.issue.count({ where: { assignedToId: userId } }),
+        prisma.issue.count({ where: { assignedToId: userId, status: 'COMPLETED' } }),
+        prisma.issue.count({ where: { assignedToId: userId, status: { in: ['IN_PROGRESS', 'ASSIGNED'] } } })
+      ]);
+      return res.json({
+        reported: assignedCount,
+        resolved: completedCount,
+        pending: inProgressCount
+      });
+    } else {
+      // Student
+      const [reportedCount, resolvedCount, pendingCount] = await Promise.all([
+        prisma.issue.count({ where: { reportedById: userId } }),
+        prisma.issue.count({ where: { reportedById: userId, status: 'COMPLETED' } }),
+        prisma.issue.count({ where: { reportedById: userId, status: { in: ['PENDING', 'IN_PROGRESS', 'ASSIGNED'] } } })
+      ]);
+      return res.json({
+        reported: reportedCount,
+        resolved: resolvedCount,
+        pending: pendingCount
+      });
+    }
   } catch (error) {
     console.error('Error fetching user stats:', error)
     res.status(500).json({ message: 'Failed to fetch user statistics', error: error.message })
@@ -294,6 +313,32 @@ app.patch('/api/issues/:id/assign', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Error assigning issue:', error);
     res.status(500).json({ message: 'Failed to assign issue' });
+  }
+});
+
+app.patch('/api/issues/:id/status', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    const validStatuses = ['PENDING', 'ASSIGNED', 'IN_PROGRESS', 'COMPLETED'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ message: 'Invalid status' });
+    }
+
+    const issue = await prisma.issue.update({
+      where: { id },
+      data: { status },
+      include: {
+        assignedTo: { select: { name: true } },
+        reportedBy: { select: { name: true, email: true } }
+      }
+    });
+
+    res.json(issue);
+  } catch (error) {
+    console.error('Error updating issue status:', error);
+    res.status(500).json({ message: 'Failed to update issue status' });
   }
 });
 

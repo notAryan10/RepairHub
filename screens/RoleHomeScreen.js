@@ -88,10 +88,10 @@ export default function RoleHomeScreen({ navigation }) {
 
       case 'warden':
         return [
-          { title: "All Issues", icon: "eye", color: "#FF9800", onPress: () => Alert.alert("Coming Soon", "Monitor all hostel maintenance issues!") },
+          { title: "All Issues", icon: "eye", color: "#FF9800", onPress: () => navigation.navigate('AssignIssue') },
           { title: "Assign Staff", icon: "people", color: "#9C27B0", onPress: () => navigation.navigate('AssignIssue') },
-          { title: "Priority Issues", icon: "warning", color: "#F44336", onPress: () => Alert.alert("Coming Soon", "View urgent maintenance issues!") },
-          { title: "Staff Management", icon: "settings", color: "#2196F3", onPress: () => Alert.alert("Coming Soon", "Manage maintenance staff!") },
+          { title: "Priority Issues", icon: "warning", color: "#F44336", onPress: () => navigation.navigate('AssignIssue') },
+          { title: "Staff Management", icon: "settings", color: "#2196F3", onPress: () => navigation.navigate('AssignIssue') },
           { title: "Reports", icon: "bar-chart", color: "#4CAF50", onPress: () => Alert.alert("Coming Soon", "View maintenance reports!") },
           { title: "Block Overview", icon: "business", color: "#FF5722", onPress: () => Alert.alert("Coming Soon", "Overview of all hostel blocks!") }
         ]
@@ -99,15 +99,15 @@ export default function RoleHomeScreen({ navigation }) {
       case 'staff':
         return [
           { title: "Assigned Issues", icon: "clipboard", color: "#2196F3", onPress: () => navigation.navigate('AssignedIssues') },
-          { title: "Update Progress", icon: "checkmark-circle", color: "#4CAF50", onPress: () => Alert.alert("Coming Soon", "Update repair progress!") },
+          { title: "Update Progress", icon: "checkmark-circle", color: "#4CAF50", onPress: () => navigation.navigate('AssignedIssues') },
           { title: "Available Issues", icon: "list", color: "#FF9800", onPress: () => Alert.alert("Coming Soon", "Browse available maintenance tasks!") },
           { title: "Schedule", icon: "calendar", color: "#9C27B0", onPress: () => Alert.alert("Coming Soon", "View your maintenance schedule!") }
         ]
 
       case 'technician':
         return [
-          { title: "My Tasks", icon: "hammer", color: "#FF5722", onPress: () => Alert.alert("Coming Soon", "View your assigned repair tasks!") },
-          { title: "Update Status", icon: "checkmark", color: "#4CAF50", onPress: () => Alert.alert("Coming Soon", "Update task completion status!") },
+          { title: "My Tasks", icon: "hammer", color: "#FF5722", onPress: () => navigation.navigate('AssignedIssues') },
+          { title: "Update Status", icon: "checkmark", color: "#4CAF50", onPress: () => navigation.navigate('AssignedIssues') },
           { title: "Parts Needed", icon: "construct", color: "#FF9800", onPress: () => Alert.alert("Coming Soon", "Request repair parts and materials!") },
           { title: "Time Tracking", icon: "time", color: "#2196F3", onPress: () => Alert.alert("Coming Soon", "Track time spent on repairs!") }
         ]
@@ -130,21 +130,21 @@ export default function RoleHomeScreen({ navigation }) {
         ]
       case 'warden':
         return [
-          { label: "Total Issues", value: "0" },
-          { label: "Urgent Issues", value: "0" },
-          { label: "Resolved", value: "0" }
+          { label: "Total Issues", value: stats.reported.toString() },
+          { label: "Resolved", value: stats.resolved.toString() },
+          { label: "Pending", value: stats.pending.toString() }
         ]
       case 'staff':
         return [
-          { label: "Assigned Tasks", value: "0" },
-          { label: "Completed", value: "0" },
-          { label: "In Progress", value: "0" }
+          { label: "Assigned Tasks", value: stats.reported.toString() },
+          { label: "Completed", value: stats.resolved.toString() },
+          { label: "In Progress", value: stats.pending.toString() }
         ]
       case 'technician':
         return [
-          { label: "Active Tasks", value: "0" },
-          { label: "Completed", value: "0" },
-          { label: "Parts Needed", value: "0" }
+          { label: "Active Tasks", value: stats.reported.toString() },
+          { label: "Completed", value: stats.resolved.toString() },
+          { label: "In Progress", value: stats.pending.toString() }
         ]
       default:
         return [
