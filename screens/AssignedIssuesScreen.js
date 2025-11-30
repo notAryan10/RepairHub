@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, StyleSheet, FlatList, Alert, Modal, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, FlatList, Alert, Modal, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { Text, Card, Chip, ActivityIndicator, Button, useTheme } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -21,8 +21,8 @@ export default function AssignedIssuesScreen() {
     const fetchIssues = useCallback(async () => {
         if (!user?.token) return;
         try {
-            const response = await axios.get(`${API_URL}/staff/assigned-issues`, {
-                headers: { Authorization: `Bearer ${user.token}` }
+            const response = await axios.get(`${API_URL} /staff/assigned - issues`, {
+                headers: { Authorization: `Bearer ${user.token} ` }
             })
             setIssues(response.data)
         } catch (error) {
@@ -32,7 +32,7 @@ export default function AssignedIssuesScreen() {
             setLoading(false)
             setRefreshing(false)
         }
-    }, [user?.token]);
+    }, [user?.token])
 
     useEffect(() => {
         fetchIssues()
@@ -48,20 +48,20 @@ export default function AssignedIssuesScreen() {
         setUpdating(true);
         try {
             await axios.patch(
-                `${API_URL}/issues/${selectedIssue.id}/status`,
+                `${API_URL} /issues/${selectedIssue.id}/status`,
                 { status },
                 { headers: { Authorization: `Bearer ${user.token}` } }
             );
             Alert.alert('Success', 'Status updated successfully');
-            setModalVisible(false);
-            fetchIssues();
+            setModalVisible(false)
+            fetchIssues()
         } catch (error) {
-            console.error('Error updating status:', error);
-            Alert.alert('Error', 'Failed to update status');
+            console.error('Error updating status:', error)
+            Alert.alert('Error', 'Failed to update status')
         } finally {
-            setUpdating(false);
+            setUpdating(false)
         }
-    };
+    }
 
     const getStatusColor = (status) => {
         switch (status) {
@@ -78,7 +78,14 @@ export default function AssignedIssuesScreen() {
             <Card.Content>
                 <View style={styles.headerRow}>
                     <Text variant="titleMedium" style={styles.title}>{item.title}</Text>
-                    <Chip style={{ backgroundColor: getStatusColor(item.status) }} textStyle={{ color: 'white', fontSize: 10 }} compact>{item.status}</Chip>
+                    <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
+                        <Chip style={{ backgroundColor: getStatusColor(item.status), marginBottom: 4 }} textStyle={{ color: 'white', fontSize: 10 }} compact>{item.status}</Chip>
+                        {item.priority && (
+                            <Chip style={{ backgroundColor: item.priority === 3 ? '#F44336' : item.priority === 2 ? '#FF9800' : '#4CAF50' }} textStyle={{ color: 'white', fontSize: 10 }} compact >
+                                {item.priority === 3 ? 'HIGH' : item.priority === 2 ? 'MEDIUM' : 'LOW'}
+                            </Chip>
+                        )}
+                    </View>
                 </View>
                 <Text style={styles.description} numberOfLines={2}>{item.description}</Text>
                 <View style={styles.infoRow}>
@@ -93,13 +100,16 @@ export default function AssignedIssuesScreen() {
                     <Text variant="bodySmall" style={styles.infoLabel}>Date:</Text>
                     <Text variant="bodySmall">{new Date(item.createdAt).toLocaleDateString()}</Text>
                 </View>
+                {item.images && item.images.length > 0 && (
+                    <ScrollView horizontal style={styles.imageScroll} showsHorizontalScrollIndicator={false}>
+                        {item.images.map((img, idx) => (
+                            <Image key={idx} source={{ uri: img.url }} style={styles.issueImage} />
+                        ))}
+                    </ScrollView>
+                )}
             </Card.Content>
             <Card.Actions>
-                <Button
-                    mode="contained"
-                    onPress={() => { setSelectedIssue(item); setModalVisible(true); }}
-                    disabled={item.status === 'COMPLETED'}
-                >
+                <Button mode="contained" onPress={() => { setSelectedIssue(item); setModalVisible(true); }} disabled={item.status === 'COMPLETED'} >
                     Update Status
                 </Button>
             </Card.Actions>
@@ -111,22 +121,11 @@ export default function AssignedIssuesScreen() {
             {loading ? (
                 <ActivityIndicator size="large" style={styles.centered} />
             ) : (
-                <FlatList
-                    data={issues}
-                    renderItem={renderItem}
-                    keyExtractor={item => item.id}
-                    contentContainerStyle={styles.listContent}
-                    refreshing={refreshing}
-                    onRefresh={onRefresh}
+                <FlatList data={issues} renderItem={renderItem} keyExtractor={item => item.id} contentContainerStyle={styles.listContent} refreshing={refreshing} onRefresh={onRefresh}
                     ListEmptyComponent={<Text style={styles.emptyText}>No issues assigned to you yet.</Text>} />
             )}
 
-            <Modal
-                visible={modalVisible}
-                animationType="slide"
-                transparent={true}
-                onRequestClose={() => setModalVisible(false)}
-            >
+            <Modal visible={modalVisible} animationType="slide" transparent={true} onRequestClose={() => setModalVisible(false)} >
                 <View style={styles.modalContainer}>
                     <View style={styles.modalContent}>
                         <View style={styles.modalHeader}>
@@ -136,21 +135,13 @@ export default function AssignedIssuesScreen() {
                             </TouchableOpacity>
                         </View>
 
-                        <TouchableOpacity
-                            style={styles.statusOption}
-                            onPress={() => handleUpdateStatus('IN_PROGRESS')}
-                            disabled={updating}
-                        >
+                        <TouchableOpacity style={styles.statusOption} onPress={() => handleUpdateStatus('IN_PROGRESS')} disabled={updating} >
                             <Ionicons name="construct" size={24} color="#2196F3" />
                             <Text style={styles.statusText}>In Progress</Text>
                             {selectedIssue?.status === 'IN_PROGRESS' && <Ionicons name="checkmark" size={24} color="#4CAF50" />}
                         </TouchableOpacity>
 
-                        <TouchableOpacity
-                            style={styles.statusOption}
-                            onPress={() => handleUpdateStatus('COMPLETED')}
-                            disabled={updating}
-                        >
+                        <TouchableOpacity style={styles.statusOption} onPress={() => handleUpdateStatus('COMPLETED')} disabled={updating}>
                             <Ionicons name="checkmark-circle" size={24} color="#4CAF50" />
                             <Text style={styles.statusText}>Completed</Text>
                             {selectedIssue?.status === 'COMPLETED' && <Ionicons name="checkmark" size={24} color="#4CAF50" />}
@@ -159,7 +150,7 @@ export default function AssignedIssuesScreen() {
                 </View>
             </Modal>
         </View>
-    );
+    )
 }
 
 const styles = StyleSheet.create({
@@ -176,6 +167,8 @@ const styles = StyleSheet.create({
     modalContainer: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)' },
     modalContent: { backgroundColor: 'white', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20 },
     modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
+    imageScroll: { marginTop: 12, marginBottom: 8 },
+    issueImage: { width: 80, height: 80, borderRadius: 8, marginRight: 8 },
     statusOption: { flexDirection: 'row', alignItems: 'center', paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: '#eee' },
     statusText: { flex: 1, marginLeft: 16, fontSize: 16, color: '#333' }
 });

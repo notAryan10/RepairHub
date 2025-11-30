@@ -3,6 +3,7 @@ const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
+const upload = require('./middleware/upload');
 const prisma = new PrismaClient()
 
 const app = express();
@@ -54,16 +55,7 @@ app.post('/api/auth/register', async (req, res) => {
 
     const user = await prisma.user.create({
       data: { name, email, password: hashedPassword, role: role.toUpperCase(), roomNumber, block, phoneNumber },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        roomNumber: true,
-        block: true,
-        phoneNumber: true,
-        createdAt: true
-      },
+      select: { id: true, email: true, name: true, role: true, roomNumber: true, block: true, phoneNumber: true, createdAt: true},
     })
 
     const token = jwt.sign(
@@ -150,7 +142,6 @@ app.get('/api/user/stats', authenticateToken, async (req, res) => {
         pending: inProgressCount
       });
     } else {
-      // Student
       const [reportedCount, resolvedCount, pendingCount] = await Promise.all([
         prisma.issue.count({ where: { reportedById: userId } }),
         prisma.issue.count({ where: { reportedById: userId, status: 'COMPLETED' } }),
@@ -168,13 +159,17 @@ app.get('/api/user/stats', authenticateToken, async (req, res) => {
   }
 })
 
-app.post('/api/reports', authenticateToken, async (req, res) => {
+app.post('/api/reports', authenticateToken, upload.array('images', 5), async (req, res) => {
   try {
-    const { title, description, location, category = 'OTHER' } = req.body;
+    const { title, description, location, category = 'OTHER', priority = 'LOW' } = req.body;
     const userId = req.user.id;
 
     const validCategories = ['PLUMBING', 'ELECTRICAL', 'FURNITURE', 'WIFI', 'OTHER'];
     const issueCategory = validCategories.includes(category.toUpperCase()) ? category.toUpperCase() : 'OTHER'
+
+    const priorityMap = { 'LOW': 1, 'MEDIUM': 2, 'HIGH': 3 };
+    const issuePriority = priorityMap[priority.toUpperCase()] || 1;
+
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: { roomNumber: true, block: true }
@@ -182,16 +177,15 @@ app.post('/api/reports', authenticateToken, async (req, res) => {
 
     const issue = await prisma.issue.create({
       data: {
-        title,
-        description,
-        category: issueCategory,
-        status: 'PENDING',
-        roomNumber: location,
-        block: user.block || 'UNKNOWN',
-        reportedBy: { connect: { id: userId } }
+        title, description, category: issueCategory, status: 'PENDING',
+        priority: issuePriority, roomNumber: location, block: user.block || 'UNKNOWN', reportedBy: { connect: { id: userId } },
+        images: {
+          create: req.files?.map(file => ({ url: file.path })) || []
+        }
       },
       include: {
-        reportedBy: { select: { id: true, name: true, email: true, roomNumber: true, block: true } }
+        reportedBy: { select: { id: true, name: true, email: true, roomNumber: true, block: true } },
+        images: true
       }
     })
 
@@ -207,15 +201,9 @@ app.get('/api/reports', authenticateToken, async (req, res) => {
     const userId = req.user.id;
 
     const issues = await prisma.issue.findMany({
-      where: {
-        reportedById: userId
-      },
-      orderBy: {
-        createdAt: 'desc'
-      },
-      include: {
-        reportedBy: { select: { name: true, email: true } }
-      }
+      where: { reportedById: userId },
+      orderBy: { createdAt: 'desc' },
+      include: { reportedBy: { select: { name: true, email: true } } }
     })
 
     res.json({ issues });
@@ -242,16 +230,9 @@ app.get('/api/room/issues', authenticateToken, async (req, res) => {
     }
 
     const issues = await prisma.issue.findMany({
-      where: {
-        roomNumber: user.roomNumber,
-        block: user.block
-      },
-      orderBy: {
-        createdAt: 'desc'
-      },
-      include: {
-        reportedBy: { select: { name: true, email: true } }
-      }
+      where: { roomNumber: user.roomNumber, block: user.block },
+      orderBy: { createdAt: 'desc' },
+      include: { reportedBy: { select: { name: true, email: true } } }
     })
 
     res.json({ roomNumber: user.roomNumber, block: user.block, issues })
@@ -270,7 +251,8 @@ app.get('/api/warden/issues', authenticateToken, async (req, res) => {
       orderBy: { createdAt: 'desc' },
       include: {
         reportedBy: { select: { name: true, roomNumber: true, block: true } },
-        assignedTo: { select: { name: true } }
+        assignedTo: { select: { name: true } },
+        images: true
       }
     });
     res.json(issues);
@@ -280,16 +262,83 @@ app.get('/api/warden/issues', authenticateToken, async (req, res) => {
   }
 });
 
+app.get('/api/warden/stats/detailed', authenticateToken, async (req, res) => {
+  try {
+    const [byCategory, byStatus, byPriority] = await Promise.all([
+      prisma.issue.groupBy({
+        by: ['category'],
+        _count: { category: true }
+      }),
+      prisma.issue.groupBy({
+        by: ['status'],
+        _count: { status: true }
+      }),
+      prisma.issue.groupBy({
+        by: ['priority'],
+        _count: { priority: true }
+      })
+    ]);
+
+    res.json({
+      byCategory: byCategory.map(item => ({ name: item.category, count: item._count.category })),
+      byStatus: byStatus.map(item => ({ name: item.status, count: item._count.status })),
+      byPriority: byPriority.map(item => ({ name: item.priority === 3 ? 'HIGH' : item.priority === 2 ? 'MEDIUM' : 'LOW', count: item._count.priority }))
+    });
+  } catch (error) {
+    console.error('Error fetching detailed stats:', error);
+    res.status(500).json({ message: 'Failed to fetch detailed stats' });
+  }
+});
+
 app.get('/api/staff/list', authenticateToken, async (req, res) => {
   try {
     const staff = await prisma.user.findMany({
-      where: { role: 'STAFF' },
-      select: { id: true, name: true, email: true }
+      where: { role: { in: ['STAFF', 'TECHNICIAN'] } },
+      select: { id: true, name: true, email: true, role: true }
     });
     res.json(staff);
   } catch (error) {
     console.error('Error fetching staff list:', error);
     res.status(500).json({ message: 'Failed to fetch staff list' });
+  }
+});
+
+app.delete('/api/staff/:id', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (req.user.role !== 'WARDEN') {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+
+    await prisma.user.delete({
+      where: { id }
+    });
+
+    res.json({ message: 'Staff member deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting staff:', error);
+    res.status(500).json({ message: 'Failed to delete staff member' });
+  }
+});
+
+app.patch('/api/staff/:id', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, email, role } = req.body;
+    if (req.user.role !== 'WARDEN') {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+
+    const updatedStaff = await prisma.user.update({
+      where: { id },
+      data: { name, email, role },
+      select: { id: true, name: true, email: true, role: true }
+    });
+
+    res.json(updatedStaff);
+  } catch (error) {
+    console.error('Error updating staff:', error);
+    res.status(500).json({ message: 'Failed to update staff member' });
   }
 });
 
@@ -387,7 +436,255 @@ app.post('/api/feedback', authenticateToken, async (req, res) => {
   }
 })
 
+app.get('/api/staff/available-issues', authenticateToken, async (req, res) => {
+  try {
+    const issues = await prisma.issue.findMany({
+      where: { assignedToId: null, status: { in: ['PENDING'] } },
+      orderBy: { createdAt: 'desc' },
+      include: { reportedBy: { select: { name: true, roomNumber: true, block: true } } }
+    });
+    res.json(issues);
+  } catch (error) {
+    console.error('Error fetching available issues:', error);
+    res.status(500).json({ message: 'Failed to fetch available issues' });
+  }
+});
+
+app.patch('/api/issues/:id/schedule', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { scheduledDate } = req.body;
+
+    if (!scheduledDate) {
+      return res.status(400).json({ message: 'Scheduled date is required' });
+    }
+
+    const issue = await prisma.issue.update({
+      where: { id },
+      data: {
+        scheduledDate: new Date(scheduledDate),
+        status: 'ASSIGNED'
+      },
+      include: { assignedTo: { select: { name: true } } }
+    });
+
+    res.json(issue);
+  } catch (error) {
+    console.error('Error scheduling issue:', error);
+    res.status(500).json({ message: 'Failed to schedule issue' });
+  }
+});
+
+app.post('/api/parts-requests', authenticateToken, async (req, res) => {
+  try {
+    const { issueId, partName, quantity, description } = req.body;
+    const userId = req.user.id;
+
+    if (req.user.role !== 'TECHNICIAN') {
+      return res.status(403).json({ message: 'Only technicians can request parts' });
+    }
+
+    const partsRequest = await prisma.partsRequest.create({
+      data: { issueId, partName, quantity, description, requestedById: userId },
+      include: {
+        issue: { select: { title: true } },
+        requestedBy: { select: { name: true } }
+      }
+    });
+
+    res.status(201).json(partsRequest);
+  } catch (error) {
+    console.error('Error creating parts request:', error);
+    res.status(500).json({ message: 'Failed to create parts request' });
+  }
+});
+
+app.get('/api/parts-requests', authenticateToken, async (req, res) => {
+  try {
+    if (req.user.role !== 'WARDEN') {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+
+    const partsRequests = await prisma.partsRequest.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: {
+        issue: { select: { title: true, roomNumber: true, block: true } },
+        requestedBy: { select: { name: true, email: true } }
+      }
+    });
+
+    res.json(partsRequests);
+  } catch (error) {
+    console.error('Error fetching parts requests:', error);
+    res.status(500).json({ message: 'Failed to fetch parts requests' });
+  }
+});
+
+app.get('/api/parts-requests/my', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const partsRequests = await prisma.partsRequest.findMany({
+      where: { requestedById: userId },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        issue: { select: { title: true, roomNumber: true, block: true } }
+      }
+    });
+
+    res.json(partsRequests);
+  } catch (error) {
+    console.error('Error fetching my parts requests:', error);
+    res.status(500).json({ message: 'Failed to fetch parts requests' });
+  }
+});
+
+app.patch('/api/parts-requests/:id/status', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params
+    const { status } = req.body
+
+    if (req.user.role !== 'WARDEN') {
+      return res.status(403).json({ message: 'Unauthorized' })
+    }
+
+    const validStatuses = ['PENDING', 'APPROVED', 'REJECTED'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ message: 'Invalid status' })
+    }
+
+    const partsRequest = await prisma.partsRequest.update({
+      where: { id },
+      data: { status },
+      include: { issue: { select: { title: true } }, requestedBy: { select: { name: true } } }
+    })
+
+    res.json(partsRequest)
+  } catch (error) {
+    console.error('Error updating parts request status:', error)
+    res.status(500).json({ message: 'Failed to update parts request status' })
+  }
+});
+
+app.post('/api/time-logs/start', authenticateToken, async (req, res) => {
+  try {
+    const { issueId } = req.body
+    const userId = req.user.id
+
+    if (req.user.role !== 'TECHNICIAN') {
+      return res.status(403).json({ message: 'Only technicians can log time' })
+    }
+
+    const activeLog = await prisma.timeLog.findFirst({
+      where: {
+        technicianId: userId,
+        endTime: null
+      }
+    });
+
+    if (activeLog) {
+      return res.status(400).json({ message: 'You already have an active time log. Please stop it first.' })
+    }
+
+    const timeLog = await prisma.timeLog.create({
+      data: { issueId, technicianId: userId, startTime: new Date() },
+      include: { issue: { select: { title: true } }}
+    })
+
+    res.status(201).json(timeLog)
+  } catch (error) {
+    console.error('Error starting time log:', error)
+    res.status(500).json({ message: 'Failed to start time log' })
+  }
+})
+
+app.patch('/api/time-logs/:id/stop', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params
+    const { notes } = req.body
+    const userId = req.user.id
+
+    const timeLog = await prisma.timeLog.findUnique({
+      where: { id }
+    })
+
+    if (!timeLog || timeLog.technicianId !== userId) {
+      return res.status(404).json({ message: 'Time log not found' })
+    }
+
+    if (timeLog.endTime) {
+      return res.status(400).json({ message: 'Time log already stopped' })
+    }
+
+    const endTime = new Date()
+    const duration = Math.floor((endTime - new Date(timeLog.startTime)) / 60000)
+
+    const updatedTimeLog = await prisma.timeLog.update({
+      where: { id },
+      data: { endTime, duration, notes },
+      include: { issue: { select: { title: true } }}
+    })
+
+    res.json(updatedTimeLog)
+  } catch (error) {
+    console.error('Error stopping time log:', error)
+    res.status(500).json({ message: 'Failed to stop time log' })
+  }
+})
+
+app.get('/api/time-logs/my', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const timeLogs = await prisma.timeLog.findMany({
+      where: { technicianId: userId },
+      orderBy: { createdAt: 'desc' },
+      include: { issue: { select: { title: true, roomNumber: true, block: true } }}
+    })
+
+    res.json(timeLogs)
+  } catch (error) {
+    console.error('Error fetching time logs:', error)
+    res.status(500).json({ message: 'Failed to fetch time logs' })
+  }
+})
+
+app.get('/api/time-logs/active', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const activeLog = await prisma.timeLog.findFirst({
+      where: { technicianId: userId, endTime: null },
+      include: { issue: { select: { title: true } } }
+    })
+
+    res.json(activeLog)
+  } catch (error) {
+    console.error('Error fetching active time log:', error)
+    res.status(500).json({ message: 'Failed to fetch active time log' })
+  }
+})
+
+app.get('/api/time-logs/issue/:issueId', authenticateToken, async (req, res) => {
+  try {
+    const { issueId } = req.params;
+
+    const timeLogs = await prisma.timeLog.findMany({
+      where: { issueId },
+      orderBy: { createdAt: 'desc' },
+      include: { technician: { select: { name: true } } }
+    })
+
+    const totalDuration = timeLogs.reduce((sum, log) => sum + (log.duration || 0), 0)
+
+    res.json({ timeLogs, totalDuration })
+  } catch (error) {
+    console.error('Error fetching issue time logs:', error)
+    res.status(500).json({ message: 'Failed to fetch issue time logs' })
+  }
+})
+
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
-});
+})

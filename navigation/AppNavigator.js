@@ -18,6 +18,13 @@ import Notifications from "../screens/Notifications";
 import Feedback from "../screens/Feedback";
 import AssignIssueScreen from '../screens/AssignIssueScreen';
 import AssignedIssuesScreen from '../screens/AssignedIssuesScreen';
+import AvailableIssuesScreen from '../screens/AvailableIssuesScreen';
+import ScheduleIssueScreen from '../screens/ScheduleIssueScreen';
+import ReportsScreen from '../screens/ReportsScreen';
+import StaffManagementScreen from '../screens/StaffManagementScreen';
+import PartsRequestScreen from '../screens/PartsRequestScreen';
+import PartsManagementScreen from '../screens/PartsManagementScreen';
+import TimeTrackingScreen from '../screens/TimeTrackingScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -33,14 +40,14 @@ function MainTabs() {
       <Tab.Screen name="Home" component={RoleHomeScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
-  );
+  )
 }
 function LoadingScreen() {
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <ActivityIndicator size="large" color="#4CAF50" />
     </View>
-  );
+  )
 }
 
 export default function AppNavigator() {
@@ -69,6 +76,13 @@ export default function AppNavigator() {
           <Stack.Screen name="Feedback" component={Feedback} options={{ headerShown: true, title: "Feedback" }} />
           <Stack.Screen name="AssignIssue" component={AssignIssueScreen} options={{ headerShown: true, title: "Assign Issues" }} />
           <Stack.Screen name="AssignedIssues" component={AssignedIssuesScreen} options={{ headerShown: true, title: "My Assigned Issues" }} />
+          <Stack.Screen name="AvailableIssues" component={AvailableIssuesScreen} options={{ headerShown: true, title: "Available Issues" }} />
+          <Stack.Screen name="ScheduleIssue" component={ScheduleIssueScreen} options={{ headerShown: true, title: "Schedule Issue" }} />
+          <Stack.Screen name="Reports" component={ReportsScreen} options={{ headerShown: true, title: "Maintenance Reports" }} />
+          <Stack.Screen name="StaffManagement" component={StaffManagementScreen} options={{ headerShown: true, title: "Staff Management" }} />
+          <Stack.Screen name="PartsRequest" component={PartsRequestScreen} options={{ headerShown: true, title: "Parts Request" }} />
+          <Stack.Screen name="PartsManagement" component={PartsManagementScreen} options={{ headerShown: true, title: "Parts Requested" }} />
+          <Stack.Screen name="TimeTracking" component={TimeTrackingScreen} options={{ headerShown: true, title: "Time Tracking" }} />
         </>
       )}
     </Stack.Navigator>

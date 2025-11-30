@@ -40,9 +40,7 @@ export default function Notifications() {
     const unreadCount = notifications.filter(n => !n.read).length
 
     return (
-        <ScrollView
-            style={styles.container}
-            showsVerticalScrollIndicator={false}
+        <ScrollView style={styles.container} showsVerticalScrollIndicator={false}
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#4CAF50']} />}>
             <View style={styles.header}>
                 <Ionicons name="notifications" size={60} color="#fff" />
@@ -100,10 +98,7 @@ export default function Notifications() {
                         </Text>
                     </View> ) : (
                     notifications.map((notification) => (
-                        <TouchableOpacity
-                            key={notification.id}
-                            style={[styles.notificationCard, !notification.read && styles.unreadNotification]}
-                            onPress={() => markAsRead(notification.id)}>
+                        <TouchableOpacity key={notification.id} style={[styles.notificationCard, !notification.read && styles.unreadNotification]} onPress={() => markAsRead(notification.id)}>
                             <View style={styles.notificationIcon}>
                                 <Ionicons name={notification.icon} size={24} color={notification.color} />
                             </View>

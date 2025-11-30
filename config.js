@@ -1,5 +1,17 @@
-const IP_ADDRESS = '10.123.2.190';
+import Constants from 'expo-constants';
 
-const API_URL = `http://${IP_ADDRESS}:3000/api`;
+const port = process.env.PORT || 3000;
+
+const getApiUrl = () => {
+    const debuggerHost = Constants.expoConfig?.hostUri;
+    if (debuggerHost) {
+        const host = debuggerHost.split(':')[0]
+        return `http://${host}:${port}/api`;
+    }
+
+    return `http://localhost:${port}/api`;
+};
+
+const API_URL = getApiUrl();
 
 export default API_URL;

@@ -40,19 +40,20 @@ model User {
   password      String
   name          String
   role          UserRole
-  roomNumber    String?   // Only for students
-  block         String?   // Only for students
+  roomNumber    String?   
+  block         String?   
   phoneNumber   String?
-  fcmToken      String?   // For push notifications
+  fcmToken      String?   
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  // Relationships
   reportedIssues     Issue[]        @relation("ReportedBy")
   assignedIssues     Issue[]        @relation("AssignedTo")
   notifications      Notification[]
   feedbacksGiven     Feedback[]
   appFeedbacks       AppFeedback[]
+  partsRequests      PartsRequest[]  @relation("PartsRequestedBy")
+  timeLogs           TimeLog[]       @relation("TimeLoggedBy")
 
   @@index([email])
 }
@@ -69,8 +70,8 @@ model Issue {
   isRecurring Boolean      @default(false)
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
+  scheduledDate DateTime?
 
-  // Relationships
   reportedBy      User          @relation("ReportedBy", fields: [reportedById], references: [id])
   reportedById    String
   assignedTo      User?         @relation("AssignedTo", fields: [assignedToId], references: [id])
@@ -79,6 +80,8 @@ model Issue {
   feedback        Feedback?
   notifications   Notification[]
   images          IssueImage[]
+  partsRequests   PartsRequest[]
+  timeLogs        TimeLog[]
 
   @@index([status])
   @@index([category])
@@ -91,7 +94,6 @@ model StatusUpdate {
   comment   String?  @db.Text
   createdAt DateTime @default(now())
 
-  // Relationships
   issue     Issue    @relation(fields: [issueId], references: [id])
   issueId   String
 
@@ -104,7 +106,7 @@ model Feedback {
   comment   String?        @db.Text
   createdAt DateTime       @default(now())
 
-  // Relationships
+
   issue     Issue          @relation(fields: [issueId], references: [id])
   issueId   String        @unique
   user      User          @relation(fields: [userId], references: [id])
@@ -120,7 +122,6 @@ model Notification {
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
 
-  // Relationships
   user      User     @relation(fields: [userId], references: [id])
   userId    String
   issue     Issue?   @relation(fields: [issueId], references: [id])
@@ -135,11 +136,53 @@ model IssueImage {
   url       String   @db.Text
   createdAt DateTime @default(now())
 
-  // Relationships
   issue     Issue    @relation(fields: [issueId], references: [id])
   issueId   String
 
   @@index([issueId])
+}
+
+enum PartsRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model PartsRequest {
+  id          String             @id @default(uuid())
+  partName    String
+  quantity    Int
+  description String?            @db.Text
+  status      PartsRequestStatus @default(PENDING)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  issue         Issue   @relation(fields: [issueId], references: [id])
+  issueId       String
+  requestedBy   User    @relation("PartsRequestedBy", fields: [requestedById], references: [id])
+  requestedById String
+
+  @@index([issueId])
+  @@index([requestedById])
+  @@index([status])
+}
+
+model TimeLog {
+  id            String    @id @default(uuid())
+  startTime     DateTime
+  endTime       DateTime?
+  duration      Int?      
+  notes         String?   @db.Text
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  issue         Issue     @relation(fields: [issueId], references: [id])
+  issueId       String
+  technician    User      @relation("TimeLoggedBy", fields: [technicianId], references: [id])
+  technicianId  String
+
+  @@index([issueId])
+  @@index([technicianId])
 }
 
 model AppFeedback {

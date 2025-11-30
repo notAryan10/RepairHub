@@ -91,25 +91,25 @@ export default function RoleHomeScreen({ navigation }) {
           { title: "All Issues", icon: "eye", color: "#FF9800", onPress: () => navigation.navigate('AssignIssue') },
           { title: "Assign Staff", icon: "people", color: "#9C27B0", onPress: () => navigation.navigate('AssignIssue') },
           { title: "Priority Issues", icon: "warning", color: "#F44336", onPress: () => navigation.navigate('AssignIssue') },
-          { title: "Staff Management", icon: "settings", color: "#2196F3", onPress: () => navigation.navigate('AssignIssue') },
-          { title: "Reports", icon: "bar-chart", color: "#4CAF50", onPress: () => Alert.alert("Coming Soon", "View maintenance reports!") },
-          { title: "Block Overview", icon: "business", color: "#FF5722", onPress: () => Alert.alert("Coming Soon", "Overview of all hostel blocks!") }
+          { title: "Staff Management", icon: "settings", color: "#2196F3", onPress: () => navigation.navigate('StaffManagement') },
+          { title: "Parts Requested", icon: "construct", color: "#9C27B0", onPress: () => navigation.navigate('PartsManagement') },
+          { title: "Reports", icon: "bar-chart", color: "#4CAF50", onPress: () => navigation.navigate('Reports') }
         ]
 
       case 'staff':
         return [
           { title: "Assigned Issues", icon: "clipboard", color: "#2196F3", onPress: () => navigation.navigate('AssignedIssues') },
           { title: "Update Progress", icon: "checkmark-circle", color: "#4CAF50", onPress: () => navigation.navigate('AssignedIssues') },
-          { title: "Available Issues", icon: "list", color: "#FF9800", onPress: () => Alert.alert("Coming Soon", "Browse available maintenance tasks!") },
-          { title: "Schedule", icon: "calendar", color: "#9C27B0", onPress: () => Alert.alert("Coming Soon", "View your maintenance schedule!") }
+          { title: "Available Issues", icon: "list", color: "#FF9800", onPress: () => navigation.navigate('AvailableIssues') },
+          { title: "Schedule", icon: "calendar", color: "#9C27B0", onPress: () => navigation.navigate('ScheduleIssue') }
         ]
 
       case 'technician':
         return [
           { title: "My Tasks", icon: "hammer", color: "#FF5722", onPress: () => navigation.navigate('AssignedIssues') },
           { title: "Update Status", icon: "checkmark", color: "#4CAF50", onPress: () => navigation.navigate('AssignedIssues') },
-          { title: "Parts Needed", icon: "construct", color: "#FF9800", onPress: () => Alert.alert("Coming Soon", "Request repair parts and materials!") },
-          { title: "Time Tracking", icon: "time", color: "#2196F3", onPress: () => Alert.alert("Coming Soon", "Track time spent on repairs!") }
+          { title: "Parts Needed", icon: "construct", color: "#FF9800", onPress: () => navigation.navigate('PartsRequest') },
+          { title: "Time Tracking", icon: "time", color: "#2196F3", onPress: () => navigation.navigate('TimeTracking') }
         ]
 
       default:
