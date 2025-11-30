@@ -21,8 +21,8 @@ export default function AssignedIssuesScreen() {
     const fetchIssues = useCallback(async () => {
         if (!user?.token) return;
         try {
-            const response = await axios.get(`${API_URL} /staff/assigned - issues`, {
-                headers: { Authorization: `Bearer ${user.token} ` }
+            const response = await axios.get(`${API_URL}/staff/assigned-issues`, {
+                headers: { Authorization: `Bearer ${user.token}` }
             })
             setIssues(response.data)
         } catch (error) {
@@ -48,7 +48,7 @@ export default function AssignedIssuesScreen() {
         setUpdating(true);
         try {
             await axios.patch(
-                `${API_URL} /issues/${selectedIssue.id}/status`,
+                `${API_URL}/issues/${selectedIssue.id}/status`,
                 { status },
                 { headers: { Authorization: `Bearer ${user.token}` } }
             );
