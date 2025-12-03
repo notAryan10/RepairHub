@@ -6,7 +6,10 @@ RepairHub – Central Place for All Repair Requests
 ## 2. 👤 Name & Roll Number
 Aryan Verma – 2024-B-09082006B
 
-## 3. 📌 Problem Statement
+## 3. 🔗 Link For Video
+https://drive.google.com/file/d/1DSUvI81-SvPQcCNM6LmJ7KVjg4QtqsCq/view?usp=sharing
+
+## 4. 📌 Problem Statement
 In hostels, students often report maintenance issues (plumbing leaks, electrical faults, Wi-Fi problems, broken furniture) verbally or on paper.  
 This causes:  
 - Delays in repairs due to lack of proper tracking  
@@ -15,7 +18,7 @@ This causes:
 
 There is no centralized, transparent, and quick system to log, track, and update repair requests.
 
-## 4. ✅ Proposed Solution
+## 5. ✅ Proposed Solution
 A React Native mobile app that allows residents to instantly report maintenance issues with photos, track the repair progress, and receive notifications when issues are resolved.
 
 The system will:
@@ -24,7 +27,7 @@ The system will:
 - Use role-based access for Students, Wardens, and Staff  
 - Send push notifications for updates  
 
-## 5. 🔑 Key Features
+## 6. 🔑 Key Features
 - **One-Tap Issue Reporting** – Upload photo, write description, and choose category (Plumbing, Electrical, Furniture, Wi-Fi, Other).  
 - **Push Notifications** – Real-time alerts when an issue’s status changes.  
 - **Live Issue Tracking** – Status updates with timestamps.  
@@ -36,12 +39,12 @@ The system will:
 - **Feedback System** – Students can mark “Satisfied” or “Not Satisfied” after repair.  
 - **Offline Mode** – Save issue locally and sync when online.  
 
-## 6. 🎯 Target Users / Audience
+## 7. 🎯 Target Users / Audience
 - Hostel students  
 - Wardens and hostel admins  
 - Maintenance staff  
 
-## 7. 💻Technology Stack
+## 8. 💻Technology Stack
 
 - **Frontend:** React Native (Expo)
 - **Navigation:** React Navigation
@@ -53,10 +56,10 @@ The system will:
 - **File Storage:** AWS S3 / Firebase Storage
 - **Hosting:** Render / Vercel
 
-## 8. 💯 Expected Outcome
+## 9. 💯 Expected Outcome
 A fully functional mobile app where students can log issues in seconds, wardens can manage them efficiently, and repairs are completed faster with transparency.
 
-## 9. 📅 Timeline
+## 10. 📅 Timeline
 - **Week 1–2:** Requirement gathering, UI/UX design  
 - **Week 3–4:** Backend setup, MySQL + MongoDB integration  
 - **Week 5:** Image upload system (Firebase Storage / AWS S3)  
@@ -66,7 +69,7 @@ A fully functional mobile app where students can log issues in seconds, wardens 
 - **Week 9:** Testing, bug fixing, and optimization  
 - **Week 10:** Deployment & final presentation  
 
-## 10. 📌 Future Scope
+## 11. 📌 Future Scope
 - AI-based issue categorization from description/photos  
 - QR code scanning for quick reporting from specific rooms  
 - Repair budget and cost tracking  
