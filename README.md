@@ -53,7 +53,7 @@ The system will:
 - **Database:** MySQL (Prisma ORM)
 - **Authentication:** JWT
 - **Notifications:** Firebase Cloud Messaging (FCM)
-- **File Storage:** AWS S3 / Firebase Storage
+- **File Storage:** Cloudinary
 - **Hosting:** Render / Vercel
 
 ## 9. 💯 Expected Outcome
